@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import HomeScreen from './components/HomeScreen.jsx';
+import MatchmakingScreen from './components/MatchmakingScreen.jsx';
 import CameraChallenge from './components/CameraChallenge.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
 
 const screens = {
   home: 'home',
+  matchmaking: 'matchmaking',
   challenge: 'challenge',
   result: 'result'
 };
@@ -19,6 +21,10 @@ export default function App() {
     setGoal(nextGoal);
     setResult(null);
     setChallengeKey((key) => key + 1);
+    setScreen(screens.matchmaking);
+  }
+
+  function enterChallenge() {
     setScreen(screens.challenge);
   }
 
@@ -35,6 +41,10 @@ export default function App() {
   return (
     <div className="app-shell">
       {screen === screens.home && <HomeScreen defaultGoal={goal} onStart={startChallenge} />}
+
+      {screen === screens.matchmaking && (
+        <MatchmakingScreen goal={goal} onReady={enterChallenge} onCancel={goHome} />
+      )}
 
       {screen === screens.challenge && (
         <CameraChallenge
