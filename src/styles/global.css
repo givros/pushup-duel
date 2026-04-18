@@ -1644,11 +1644,153 @@ button:disabled {
 
 .welcome-card {
   display: grid;
-  place-items: center;
+  gap: 18px;
+  align-content: center;
+  min-height: min(640px, calc(100dvh - 48px - var(--safe-top) - var(--safe-bottom)));
 }
 
 .welcome-card .primary-button {
-  width: min(100%, 260px);
+  width: 100%;
+}
+
+.welcome-visual {
+  position: relative;
+  height: 220px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(6, 14, 32, 0.18), rgba(6, 14, 32, 0.86)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 56px),
+    linear-gradient(135deg, #142039, #081226 58%, #050b18);
+  box-shadow: var(--shadow);
+}
+
+.welcome-visual::before {
+  content: "";
+  position: absolute;
+  inset: 38px 34px 0;
+  background:
+    radial-gradient(circle at 50% 14%, rgba(218, 226, 253, 0.72) 0 7%, transparent 8%),
+    linear-gradient(180deg, transparent 0 26%, rgba(218, 226, 253, 0.18) 27% 45%, transparent 46%),
+    linear-gradient(90deg, transparent 0 16%, rgba(218, 226, 253, 0.14) 17% 24%, transparent 25% 75%, rgba(218, 226, 253, 0.14) 76% 83%, transparent 84%);
+  filter: grayscale(1);
+  opacity: 0.42;
+}
+
+.welcome-phone {
+  position: relative;
+  z-index: 1;
+  width: 142px;
+  height: 184px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 13px;
+  border: 2px solid rgba(0, 229, 255, 0.42);
+  border-radius: 18px;
+  background: rgba(11, 19, 38, 0.76);
+  box-shadow:
+    0 0 28px rgba(0, 229, 255, 0.22),
+    inset 0 0 24px rgba(0, 229, 255, 0.06);
+}
+
+.welcome-camera-line {
+  position: absolute;
+  top: 12px;
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(218, 226, 253, 0.32);
+}
+
+.welcome-rep-count {
+  color: var(--cyan);
+  font-size: 4.8rem;
+  font-weight: 950;
+  line-height: 0.9;
+  text-shadow: 0 0 24px rgba(0, 229, 255, 0.4);
+}
+
+.welcome-signal {
+  width: 92px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-highest);
+}
+
+.welcome-signal span {
+  display: block;
+  width: 72%;
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+.welcome-copy {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+.welcome-copy h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(3rem, 16vw, 5.2rem);
+  font-style: italic;
+  font-weight: 950;
+  letter-spacing: 0;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.welcome-copy h1 em {
+  color: var(--cyan);
+  font-style: italic;
+  text-shadow: 0 0 22px rgba(0, 229, 255, 0.28);
+}
+
+.welcome-copy p {
+  margin: 0;
+  color: rgba(218, 226, 253, 0.82);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.welcome-points {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-points li {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(19, 27, 46, 0.72);
+}
+
+.welcome-points .material-symbols-outlined {
+  color: var(--cyan);
+  font-size: 1.1rem;
+}
+
+.welcome-points strong {
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .profile-form {
