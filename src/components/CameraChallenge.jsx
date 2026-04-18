@@ -45,6 +45,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
   const phaseRef = useRef('setup');
   const pushupsRef = useRef(0);
   const completedRef = useRef(false);
+  const countdownStartedRef = useRef(false);
 
   const [phase, setPhase] = useState('setup');
   const [countdown, setCountdown] = useState(5);
@@ -137,15 +138,17 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
   }, []);
 
   useEffect(() => {
-    if (!isReady || phase !== 'setup') {
+    if (!isReady || phaseRef.current !== 'setup' || countdownStartedRef.current) {
       return undefined;
     }
 
     let remaining = 5;
+    countdownStartedRef.current = true;
     detectorRef.current.reset();
     setPushups(0);
     setCountdown(remaining);
     setDetection({ ...initialDetection, status: 'Prêt' });
+    phaseRef.current = 'countdown';
     setPhase('countdown');
 
     const intervalId = window.setInterval(() => {
@@ -156,6 +159,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
         detectorRef.current.reset();
         resetTimer();
         startTimer();
+        phaseRef.current = 'active';
         setPhase('active');
         setDetection((current) => ({
           ...current,
@@ -170,7 +174,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isReady, phase, resetTimer, startTimer]);
+  }, [isReady, resetTimer, startTimer]);
 
   useEffect(() => {
     if (!landmarker || cameraStatus !== 'ready') {
