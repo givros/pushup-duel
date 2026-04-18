@@ -1,4 +1,3 @@
-import BottomNav from './BottomNav.jsx';
 import TopBar from './TopBar.jsx';
 
 export default function ResultScreen({ result, onRestart, onHome }) {
@@ -79,8 +78,6 @@ export default function ResultScreen({ result, onRestart, onHome }) {
           Rejouer
         </button>
       </section>
-
-      <BottomNav />
     </main>
   );
 }

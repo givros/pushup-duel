@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import BottomNav from './BottomNav.jsx';
 import TopBar from './TopBar.jsx';
 
 const MATCHMAKING_DURATION_MS = 3600;
@@ -76,8 +75,6 @@ export default function MatchmakingScreen({ goal, onReady, onCancel }) {
           Annuler
         </button>
       </section>
-
-      <BottomNav />
     </main>
   );
 }

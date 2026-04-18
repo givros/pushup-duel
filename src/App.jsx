@@ -3,6 +3,7 @@ import HomeScreen from './components/HomeScreen.jsx';
 import MatchmakingScreen from './components/MatchmakingScreen.jsx';
 import CameraChallenge from './components/CameraChallenge.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
+import BottomNav from './components/BottomNav.jsx';
 
 const screens = {
   home: 'home',
@@ -58,6 +59,8 @@ export default function App() {
       {screen === screens.result && result && (
         <ResultScreen result={result} onRestart={() => startChallenge(result.goal)} onHome={goHome} />
       )}
+
+      <BottomNav />
     </div>
   );
 }

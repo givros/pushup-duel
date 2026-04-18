@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import BottomNav from './BottomNav.jsx';
 import TopBar from './TopBar.jsx';
 
 export default function HomeScreen({ defaultGoal, onStart }) {
@@ -98,8 +97,6 @@ export default function HomeScreen({ defaultGoal, onStart }) {
         <Activity icon="close" title="vs MuscleMage" detail="Duel Lost • 62 vs 70" reward="+5 XP" muted />
         <Activity icon="workspace_premium" title="vs Iron_Push" detail="Duel Won • 40 vs 32" reward="+20 XP" />
       </section>
-
-      <BottomNav />
     </main>
   );
 }

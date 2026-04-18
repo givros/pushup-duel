@@ -1,5 +1,4 @@
 import { formatTime } from '../utils/timeFormat.js';
-import BottomNav from './BottomNav.jsx';
 
 export default function StatsOverlay({ count, goal, elapsedMs, status, confidence, onStop }) {
   const confidencePercent = Math.round((confidence || 0) * 100);
@@ -113,8 +112,6 @@ export default function StatsOverlay({ count, goal, elapsedMs, status, confidenc
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </section>
   );
 }
