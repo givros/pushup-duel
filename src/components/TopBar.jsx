@@ -1,3 +1,5 @@
+import Icon from './Icon.jsx';
+
 export default function TopBar({ compact = false, progression }) {
   const profile = progression?.profile || {
     nickname: 'Athlète',
@@ -24,7 +26,7 @@ export default function TopBar({ compact = false, progression }) {
       </div>
 
       <div className="coin-pill">
-        <span className="material-symbols-outlined filled">payments</span>
+        <Icon name="payments" className="filled" />
         <strong>{profile.coins} pièces</strong>
       </div>
     </header>

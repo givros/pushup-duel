@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import TopBar from './TopBar.jsx';
+import Icon from './Icon.jsx';
 import { CHALLENGE_MODES, makeChallenge } from '../utils/progression.js';
 
 export default function HomeScreen({ progression, defaultGoal, onStart }) {
@@ -80,9 +81,7 @@ export default function HomeScreen({ progression, defaultGoal, onStart }) {
             )}
 
             <div className="challenge-note">
-              <span className="material-symbols-outlined filled">
-                {mode === CHALLENGE_MODES.maxReps ? 'timer' : 'bolt'}
-              </span>
+              <Icon name={mode === CHALLENGE_MODES.maxReps ? 'timer' : 'bolt'} className="filled" />
               {mode === CHALLENGE_MODES.maxReps
                 ? 'Faire le maximum de pompes en 60 secondes.'
                 : 'Atteindre ton objectif le plus rapidement possible.'}
@@ -95,7 +94,7 @@ export default function HomeScreen({ progression, defaultGoal, onStart }) {
             )}
 
             <button className="launch-button" type="submit">
-              <span className="material-symbols-outlined filled">play_arrow</span>
+              <Icon name="play_arrow" className="filled" />
               Lancer le défi
             </button>
           </form>

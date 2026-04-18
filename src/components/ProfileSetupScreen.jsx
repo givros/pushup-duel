@@ -28,6 +28,7 @@ export default function ProfileSetupScreen({ onComplete }) {
       <form className="profile-form" onSubmit={handleSubmit} noValidate>
         <span className="onboarding-kicker">Création du profil</span>
         <h1>Présente-toi</h1>
+        <p>Ton pseudo et ton niveau servent à suivre tes records sur cet appareil.</p>
 
         <label htmlFor="nickname">Pseudo</label>
         <input

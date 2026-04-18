@@ -58,14 +58,27 @@ button:disabled {
   opacity: 0.55;
 }
 
-.material-symbols-outlined {
+.material-symbols-outlined,
+.app-icon {
   display: inline-block;
+}
+
+.material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
   line-height: 1;
 }
 
-.material-symbols-outlined.filled {
+.material-symbols-outlined.filled,
+.app-icon.filled {
   font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 24;
+}
+
+.app-icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  fill: currentColor;
+  line-height: 1;
 }
 
 .app-shell {
@@ -207,7 +220,8 @@ button:disabled {
   background: var(--surface-highest);
 }
 
-.coin-pill .material-symbols-outlined {
+.coin-pill .material-symbols-outlined,
+.coin-pill .app-icon {
   color: var(--cyan);
   font-size: 0.92rem;
 }
@@ -255,7 +269,8 @@ button:disabled {
   transform: scale(0.92);
 }
 
-.nav-item .material-symbols-outlined {
+.nav-item .material-symbols-outlined,
+.nav-item .app-icon {
   font-size: 1.22rem;
 }
 
@@ -654,7 +669,8 @@ button:disabled {
   background: var(--surface-low);
 }
 
-.mode-chip .material-symbols-outlined {
+.mode-chip .material-symbols-outlined,
+.mode-chip .app-icon {
   color: var(--cyan);
   font-size: 1rem;
 }
@@ -1223,7 +1239,9 @@ button:disabled {
 }
 
 .lead-player > .material-symbols-outlined,
-.lead-rival > .material-symbols-outlined {
+.lead-rival > .material-symbols-outlined,
+.lead-player > .app-icon,
+.lead-rival > .app-icon {
   width: 32px;
   height: 32px;
   display: grid;
@@ -1234,7 +1252,8 @@ button:disabled {
   font-size: 1rem;
 }
 
-.lead-rival > .material-symbols-outlined {
+.lead-rival > .material-symbols-outlined,
+.lead-rival > .app-icon {
   color: var(--danger);
   background: rgba(255, 180, 171, 0.18);
   border: 1px solid rgba(255, 180, 171, 0.5);
@@ -1421,7 +1440,8 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.time-comparison .material-symbols-outlined {
+.time-comparison .material-symbols-outlined,
+.time-comparison .app-icon {
   color: var(--cyan);
   font-size: 2.4rem;
 }
@@ -1465,7 +1485,8 @@ button:disabled {
   gap: 10px;
 }
 
-.reward-grid .material-symbols-outlined {
+.reward-grid .material-symbols-outlined,
+.reward-grid .app-icon {
   width: 48px;
   height: 48px;
   display: grid;
@@ -1475,7 +1496,8 @@ button:disabled {
   background: rgba(0, 229, 255, 0.12);
 }
 
-.reward-grid div:last-child .material-symbols-outlined {
+.reward-grid div:last-child .material-symbols-outlined,
+.reward-grid div:last-child .app-icon {
   color: var(--yellow);
   background: rgba(254, 201, 49, 0.12);
 }
@@ -1780,7 +1802,8 @@ button:disabled {
   background: rgba(19, 27, 46, 0.72);
 }
 
-.welcome-points .material-symbols-outlined {
+.welcome-points .material-symbols-outlined,
+.welcome-points .app-icon {
   color: var(--cyan);
   font-size: 1.1rem;
 }
@@ -1822,6 +1845,14 @@ button:disabled {
   font-weight: 950;
   line-height: 0.95;
   text-transform: uppercase;
+}
+
+.profile-form p {
+  margin: -4px 0 8px;
+  color: rgba(218, 226, 253, 0.78);
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.45;
 }
 
 .profile-form input {
@@ -1940,7 +1971,8 @@ button:disabled {
   line-height: 1.35;
 }
 
-.challenge-note .material-symbols-outlined {
+.challenge-note .material-symbols-outlined,
+.challenge-note .app-icon {
   flex: 0 0 auto;
   color: var(--cyan);
   font-size: 1.05rem;

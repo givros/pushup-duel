@@ -1,3 +1,5 @@
+import Icon from './Icon.jsx';
+
 export default function WelcomeScreen({ onStart }) {
   return (
     <main className="screen onboarding-screen">
@@ -24,15 +26,15 @@ export default function WelcomeScreen({ onStart }) {
 
         <ul className="welcome-points" aria-label="Points forts">
           <li>
-            <span className="material-symbols-outlined filled">videocam</span>
+            <Icon name="videocam" className="filled" />
             <strong>Détection caméra</strong>
           </li>
           <li>
-            <span className="material-symbols-outlined filled">timer</span>
+            <Icon name="timer" className="filled" />
             <strong>Modes chrono</strong>
           </li>
           <li>
-            <span className="material-symbols-outlined filled">trending_up</span>
+            <Icon name="trending_up" className="filled" />
             <strong>Progression locale</strong>
           </li>
         </ul>

@@ -1,5 +1,6 @@
 import { formatTime } from '../utils/timeFormat.js';
 import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
+import Icon from './Icon.jsx';
 
 export default function StatsOverlay({ count, challenge, elapsedMs, status, confidence, onStop }) {
   const confidencePercent = Math.round((confidence || 0) * 100);
@@ -30,7 +31,7 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
         </div>
 
         <button className="pause-button" type="button" onClick={onStop} aria-label="Stopper le défi">
-          <span className="material-symbols-outlined">pause</span>
+          <Icon name="pause" />
         </button>
       </header>
 
@@ -41,7 +42,7 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
           {!isMaxMode && <small>/{challenge.goal}</small>}
         </h1>
         <div className={`feedback-toast ${statusClass(normalizedStatus)}`}>
-          <span className="material-symbols-outlined filled">{feedback.icon}</span>
+          <Icon name={feedback.icon} className="filled" />
           <strong>{feedback.label}</strong>
         </div>
       </div>
@@ -60,7 +61,7 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
         <div className="lead-fill" style={{ width: `${progress}%` }} />
         <div className="lead-content">
           <div className="lead-player">
-            <span className="material-symbols-outlined filled">{isMaxMode ? 'timer' : 'flag'}</span>
+            <Icon name={isMaxMode ? 'timer' : 'flag'} className="filled" />
             <div>
               <small>{isMaxMode ? 'Défi 1 minute' : 'Objectif'}</small>
               <strong>{isMaxMode ? `${count} pompes` : `${count}/${challenge.goal} pompes`}</strong>

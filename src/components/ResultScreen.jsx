@@ -1,4 +1,5 @@
 import TopBar from './TopBar.jsx';
+import Icon from './Icon.jsx';
 import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
 export default function ResultScreen({ result, progression, onRestart, onHome }) {
@@ -42,12 +43,12 @@ export default function ResultScreen({ result, progression, onRestart, onHome })
         <h2>Progression enregistrée</h2>
         <div className="reward-grid">
           <div>
-            <span className="material-symbols-outlined filled">star</span>
+            <Icon name="star" className="filled" />
             <strong>+{xpEarned} XP</strong>
           </div>
           <i />
           <div>
-            <span className="material-symbols-outlined filled">payments</span>
+            <Icon name="payments" className="filled" />
             <strong>+{coinsEarned} pièces</strong>
           </div>
         </div>

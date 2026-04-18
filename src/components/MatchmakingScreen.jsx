@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import TopBar from './TopBar.jsx';
+import Icon from './Icon.jsx';
 import { challengeTitle } from '../utils/progression.js';
 
 const MATCHMAKING_DURATION_MS = 3600;
@@ -37,7 +38,7 @@ export default function MatchmakingScreen({ challenge, progression, onReady, onC
             Push-up <span>Défi</span>
           </h1>
           <div className="mode-chip">
-            <span className="material-symbols-outlined filled">bolt</span>
+            <Icon name="bolt" className="filled" />
             <strong>{challengeTitle(challenge)}</strong>
           </div>
         </div>
