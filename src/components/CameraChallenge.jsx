@@ -6,8 +6,11 @@ import { useChallengeTimer } from '../hooks/useChallengeTimer.js';
 import { getPoseLandmarker } from '../services/poseLandmarkerService.js';
 import { createPushupDetector } from '../utils/pushupDetector.js';
 
-const TARGET_INFERENCE_INTERVAL_MS = 90;
+const TARGET_INFERENCE_INTERVAL_MS = 75;
 const TARGET_UI_INTERVAL_MS = 140;
+const COUNTDOWN_SECONDS = 5;
+const READY_HOLD_MS = 3000;
+const READY_PROGRESS_UI_INTERVAL_MS = 180;
 const POSE_CONNECTIONS = [
   [11, 13],
   [13, 15],
@@ -46,9 +49,13 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
   const pushupsRef = useRef(0);
   const completedRef = useRef(false);
   const countdownStartedRef = useRef(false);
+  const readySinceRef = useRef(null);
+  const readyProgressUiRef = useRef(0);
+  const countdownIntervalRef = useRef(0);
 
   const [phase, setPhase] = useState('setup');
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const [readyHoldRemainingMs, setReadyHoldRemainingMs] = useState(READY_HOLD_MS);
   const [modelStatus, setModelStatus] = useState('loading');
   const [modelError, setModelError] = useState('');
   const [landmarker, setLandmarker] = useState(null);
@@ -97,6 +104,41 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
     finishChallenge('stopped', pushupsRef.current);
   }, [finishChallenge]);
 
+  const beginCountdown = useCallback(() => {
+    if (countdownStartedRef.current || phaseRef.current === 'countdown' || phaseRef.current === 'active') {
+      return;
+    }
+
+    let remaining = COUNTDOWN_SECONDS;
+    countdownStartedRef.current = true;
+    readySinceRef.current = null;
+    detectorRef.current.reset();
+    window.clearInterval(countdownIntervalRef.current);
+    setCountdown(remaining);
+    phaseRef.current = 'countdown';
+    setPhase('countdown');
+
+    countdownIntervalRef.current = window.setInterval(() => {
+      remaining -= 1;
+
+      if (remaining <= 0) {
+        window.clearInterval(countdownIntervalRef.current);
+        detectorRef.current.reset();
+        resetTimer();
+        startTimer();
+        phaseRef.current = 'active';
+        setPhase('active');
+        setDetection((current) => ({
+          ...current,
+          status: current.isValid ? 'Descends' : 'mal cadré'
+        }));
+        return;
+      }
+
+      setCountdown(remaining);
+    }, 1000);
+  }, [resetTimer, startTimer]);
+
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
@@ -104,6 +146,12 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
   useEffect(() => {
     pushupsRef.current = pushups;
   }, [pushups]);
+
+  useEffect(() => {
+    return () => {
+      window.clearInterval(countdownIntervalRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     start().catch(() => {});
@@ -138,43 +186,21 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
   }, []);
 
   useEffect(() => {
-    if (!isReady || phaseRef.current !== 'setup' || countdownStartedRef.current) {
+    if (!isReady || phaseRef.current !== 'setup') {
       return undefined;
     }
 
-    let remaining = 5;
-    countdownStartedRef.current = true;
     detectorRef.current.reset();
     setPushups(0);
-    setCountdown(remaining);
+    setCountdown(COUNTDOWN_SECONDS);
+    setReadyHoldRemainingMs(READY_HOLD_MS);
     setDetection({ ...initialDetection, status: 'Prêt' });
-    phaseRef.current = 'countdown';
-    setPhase('countdown');
+    readySinceRef.current = null;
+    phaseRef.current = 'arming';
+    setPhase('arming');
 
-    const intervalId = window.setInterval(() => {
-      remaining -= 1;
-
-      if (remaining <= 0) {
-        window.clearInterval(intervalId);
-        detectorRef.current.reset();
-        resetTimer();
-        startTimer();
-        phaseRef.current = 'active';
-        setPhase('active');
-        setDetection((current) => ({
-          ...current,
-          status: current.isValid ? 'Descends' : 'mal cadré'
-        }));
-        return;
-      }
-
-      setCountdown(remaining);
-    }, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [isReady, resetTimer, startTimer]);
+    return undefined;
+  }, [isReady]);
 
   useEffect(() => {
     if (!landmarker || cameraStatus !== 'ready') {
@@ -233,6 +259,30 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
           const preview = detectorRef.current.inspect(landmarks);
           drawPose(canvas, landmarks, preview.confidence, video.videoWidth, video.videoHeight);
           publishDetection(preview, now);
+
+          if (phaseRef.current === 'arming') {
+            if (preview.status === 'Prêt' && preview.isValid) {
+              if (readySinceRef.current === null) {
+                readySinceRef.current = now;
+              }
+
+              const heldMs = now - readySinceRef.current;
+              const remainingReadyMs = Math.max(0, READY_HOLD_MS - heldMs);
+
+              if (now - readyProgressUiRef.current >= READY_PROGRESS_UI_INTERVAL_MS) {
+                readyProgressUiRef.current = now;
+                setReadyHoldRemainingMs(remainingReadyMs);
+              }
+
+              if (heldMs >= READY_HOLD_MS) {
+                setReadyHoldRemainingMs(0);
+                beginCountdown();
+              }
+            } else {
+              readySinceRef.current = null;
+              setReadyHoldRemainingMs(READY_HOLD_MS);
+            }
+          }
         }
       }
 
@@ -244,7 +294,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [cameraStatus, finishChallenge, goal, landmarker, videoRef]);
+  }, [beginCountdown, cameraStatus, finishChallenge, goal, landmarker, videoRef]);
 
   return (
     <main className="challenge-screen">
@@ -263,8 +313,8 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
       {phase !== 'active' && (
         <CountdownOverlay
           ready={isReady}
-          count={countdown}
-          label={isReady ? 'Place-toi en position' : setupLabel}
+          count={phase === 'arming' ? Math.ceil(readyHoldRemainingMs / 1000) : countdown}
+          label={getOverlayLabel({ isReady, phase, setupLabel, status: detection.status })}
         />
       )}
 
@@ -285,6 +335,22 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
       )}
     </main>
   );
+}
+
+function getOverlayLabel({ isReady, phase, setupLabel, status }) {
+  if (!isReady) {
+    return setupLabel;
+  }
+
+  if (phase === 'arming') {
+    return status === 'Prêt' ? 'Reste prêt' : 'Place-toi en position haute';
+  }
+
+  if (phase === 'countdown') {
+    return 'Place-toi en position';
+  }
+
+  return setupLabel;
 }
 
 function drawPose(canvas, landmarks, confidence, videoWidth, videoHeight) {

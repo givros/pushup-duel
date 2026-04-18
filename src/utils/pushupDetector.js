@@ -9,17 +9,20 @@ import {
 } from './poseMath.js';
 
 export const PUSHUP_DETECTOR_DEFAULTS = {
-  minConfidence: 0.55,
-  highElbowAngle: 155,
-  lowElbowAngle: 105,
-  minStableFrames: 2,
-  minTransitionMs: 240,
-  cooldownMs: 500,
-  minShoulderTravel: 0.045,
-  minTorsoLength: 0.075,
-  smoothing: 0.38,
+  minConfidence: 0.45,
+  highElbowAngle: 145,
+  returnElbowAngle: 138,
+  lowElbowAngle: 125,
+  minAngleDrop: 18,
+  minStableFrames: 1,
+  minTransitionMs: 180,
+  cooldownMs: 420,
+  minShoulderTravel: 0.025,
+  minTorsoLength: 0.06,
+  smoothing: 0.32,
   okHoldMs: 650,
-  frameMargin: 0.04
+  frameMargin: 0.08,
+  sideSwitchTolerance: 0.12
 };
 
 const SIDES = [
@@ -43,14 +46,14 @@ export function createPushupDetector(config = {}) {
   return new PushupDetector(config);
 }
 
-export function analyzePushupPose(landmarks, config = {}) {
+export function analyzePushupPose(landmarks, config = {}, preferredSideName = null) {
   const options = { ...PUSHUP_DETECTOR_DEFAULTS, ...config };
 
   if (!Array.isArray(landmarks) || landmarks.length === 0) {
     return invalidFrame('mal cadré', 0);
   }
 
-  const side = chooseBestSide(landmarks);
+  const side = chooseBestSide(landmarks, preferredSideName, options.sideSwitchTolerance);
   if (!side) {
     return invalidFrame('mal cadré', 0);
   }
@@ -110,6 +113,9 @@ export class PushupDetector {
     this.lastTransitionMs = 0;
     this.lastCountMs = 0;
     this.okUntilMs = 0;
+    this.side = null;
+    this.topElbowAngle = null;
+    this.lowestElbowAngle = null;
   }
 
   inspect(landmarks) {
@@ -131,12 +137,13 @@ export class PushupDetector {
   }
 
   update(landmarks, timestampMs = performance.now()) {
-    const frame = analyzePushupPose(landmarks, this.config);
+    const frame = analyzePushupPose(landmarks, this.config, this.side);
 
     if (!frame.isValid) {
       return this.output(frame, 'mal cadré');
     }
 
+    this.side = frame.side;
     const smoothedFrame = this.smoothFrame(frame);
     const poseClass = getPoseClass(smoothedFrame, this.config);
     const stable = this.updateStability(poseClass);
@@ -150,6 +157,8 @@ export class PushupDetector {
         this.state = 'top';
         this.topShoulderY = smoothedFrame.shoulderY;
         this.lowestShoulderY = smoothedFrame.shoulderY;
+        this.topElbowAngle = smoothedFrame.elbowAngle;
+        this.lowestElbowAngle = smoothedFrame.elbowAngle;
         this.lastTransitionMs = timestampMs;
       }
 
@@ -158,8 +167,13 @@ export class PushupDetector {
 
     if (this.state === 'top') {
       this.lowestShoulderY = Math.max(this.lowestShoulderY ?? smoothedFrame.shoulderY, smoothedFrame.shoulderY);
+      this.lowestElbowAngle = Math.min(this.lowestElbowAngle ?? smoothedFrame.elbowAngle, smoothedFrame.elbowAngle);
+      const bottomCandidate =
+        poseClass === 'low' ||
+        (this.getAngleDrop(smoothedFrame) >= this.config.minAngleDrop &&
+          this.getShoulderTravel(smoothedFrame) >= this.config.minShoulderTravel);
 
-      if (poseClass === 'low' && stable && timestampMs - this.lastTransitionMs >= this.config.minTransitionMs) {
+      if (bottomCandidate && stable && timestampMs - this.lastTransitionMs >= this.config.minTransitionMs) {
         this.state = 'bottom';
         this.lastTransitionMs = timestampMs;
         return this.output(smoothedFrame, 'Monte');
@@ -170,19 +184,24 @@ export class PushupDetector {
 
     if (this.state === 'bottom') {
       this.lowestShoulderY = Math.max(this.lowestShoulderY ?? smoothedFrame.shoulderY, smoothedFrame.shoulderY);
+      this.lowestElbowAngle = Math.min(this.lowestElbowAngle ?? smoothedFrame.elbowAngle, smoothedFrame.elbowAngle);
+      const returnedTop = poseClass === 'high' || smoothedFrame.elbowAngle >= this.config.returnElbowAngle;
 
       if (
-        poseClass === 'high' &&
+        returnedTop &&
         stable &&
         timestampMs - this.lastTransitionMs >= this.config.minTransitionMs &&
         timestampMs - this.lastCountMs >= this.config.cooldownMs
       ) {
         const shoulderTravel = this.getShoulderTravel(smoothedFrame);
-        const counted = shoulderTravel >= this.config.minShoulderTravel;
+        const angleDrop = this.getAngleDrop(smoothedFrame);
+        const counted = shoulderTravel >= this.config.minShoulderTravel && angleDrop >= this.config.minAngleDrop;
 
         this.state = 'top';
         this.topShoulderY = smoothedFrame.shoulderY;
         this.lowestShoulderY = smoothedFrame.shoulderY;
+        this.topElbowAngle = smoothedFrame.elbowAngle;
+        this.lowestElbowAngle = smoothedFrame.elbowAngle;
         this.lastTransitionMs = timestampMs;
 
         if (counted) {
@@ -215,7 +234,8 @@ export class PushupDetector {
         ...frame.metrics,
         elbowAngle: this.smoothedAngle,
         shoulderY: this.smoothedShoulderY,
-        shoulderTravel: this.getShoulderTravel({ ...frame, shoulderY: this.smoothedShoulderY })
+        shoulderTravel: this.getShoulderTravel({ ...frame, shoulderY: this.smoothedShoulderY }),
+        angleDrop: this.getAngleDrop({ ...frame, elbowAngle: this.smoothedAngle })
       }
     };
   }
@@ -239,6 +259,15 @@ export class PushupDetector {
     return Math.max(0, (this.lowestShoulderY - this.topShoulderY) / frame.torsoLength);
   }
 
+  getAngleDrop(frame) {
+    if (this.topElbowAngle === null || this.lowestElbowAngle === null) {
+      return 0;
+    }
+
+    const lowestAngle = Math.min(this.lowestElbowAngle, frame.elbowAngle);
+    return Math.max(0, this.topElbowAngle - lowestAngle);
+  }
+
   output(frame, status) {
     return {
       count: this.count,
@@ -252,8 +281,8 @@ export class PushupDetector {
   }
 }
 
-function chooseBestSide(landmarks) {
-  return SIDES.map((side) => ({
+function chooseBestSide(landmarks, preferredSideName = null, sideSwitchTolerance = 0.12) {
+  const scoredSides = SIDES.map((side) => ({
     ...side,
     confidence: averageConfidence([
       landmarks[side.shoulder],
@@ -261,7 +290,15 @@ function chooseBestSide(landmarks) {
       landmarks[side.wrist],
       landmarks[side.hip]
     ])
-  })).sort((a, b) => b.confidence - a.confidence)[0];
+  })).sort((a, b) => b.confidence - a.confidence);
+  const bestSide = scoredSides[0];
+  const preferredSide = scoredSides.find((side) => side.name === preferredSideName);
+
+  if (preferredSide && preferredSide.confidence >= bestSide.confidence - sideSwitchTolerance) {
+    return preferredSide;
+  }
+
+  return bestSide;
 }
 
 function getPoseClass(frame, config) {
