@@ -1627,3 +1627,463 @@ button:disabled {
     right: 24px;
   }
 }
+
+.onboarding-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(24px + var(--safe-top)) calc(20px + var(--safe-right)) calc(24px + var(--safe-bottom))
+    calc(20px + var(--safe-left));
+}
+
+.onboarding-card,
+.profile-form {
+  width: min(100%, 360px);
+  animation: screen-in 360ms ease both;
+}
+
+.welcome-card {
+  display: grid;
+  place-items: center;
+}
+
+.welcome-card .primary-button {
+  width: min(100%, 260px);
+}
+
+.profile-form {
+  display: grid;
+  gap: 13px;
+  padding: 22px;
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(19, 27, 46, 0.84);
+  box-shadow: var(--shadow);
+}
+
+.onboarding-kicker,
+.profile-form label,
+.mode-selector legend,
+.challenge-note {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.profile-form h1 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: clamp(2rem, 11vw, 3.25rem);
+  font-style: italic;
+  font-weight: 950;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.profile-form input {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 8px;
+  outline: 0;
+  padding: 0 14px;
+  color: var(--text);
+  background: rgba(6, 14, 32, 0.72);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.profile-form input:focus,
+.goal-control:focus-within {
+  border-color: rgba(0, 229, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.12);
+}
+
+.top-bar {
+  min-height: calc(68px + var(--safe-top));
+}
+
+.player-strip {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.player-meta span {
+  max-width: 54vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coin-pill {
+  flex: 0 0 auto;
+}
+
+.compact-hero {
+  min-height: 0;
+  margin-top: 2px;
+}
+
+.compact-hero .arena-content {
+  min-height: 0;
+  gap: 12px;
+  padding: 24px 16px 22px;
+}
+
+.compact-hero .arena-content h1 {
+  font-size: clamp(2.3rem, 11vw, 3.65rem);
+}
+
+.home-screen .duel-launcher {
+  width: min(100%, 330px);
+}
+
+.mode-selector {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.mode-selector legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  padding: 0;
+  text-align: left;
+}
+
+.mode-selector label {
+  position: relative;
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 8px;
+  color: rgba(218, 226, 253, 0.72);
+  background: rgba(11, 19, 38, 0.7);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.mode-selector input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.mode-selector label.selected {
+  color: #00363d;
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.28);
+}
+
+.challenge-note {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(6, 14, 32, 0.52);
+  text-align: left;
+  line-height: 1.35;
+}
+
+.challenge-note .material-symbols-outlined {
+  flex: 0 0 auto;
+  color: var(--cyan);
+  font-size: 1.05rem;
+}
+
+.progress-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.progress-overview article {
+  min-height: 96px;
+  display: grid;
+  align-content: space-between;
+  padding: 13px;
+  border-radius: 8px;
+  background: var(--surface-high);
+}
+
+.progress-overview span,
+.progress-overview small {
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.progress-overview strong {
+  color: var(--text);
+  font-size: clamp(1.65rem, 9vw, 2.25rem);
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.progress-overview small {
+  color: var(--cyan);
+}
+
+.mission-card.compact {
+  margin-top: 14px;
+  padding: 17px;
+}
+
+.mission-card.compact .mission-track {
+  margin-top: 13px;
+}
+
+.mission-card.compact p {
+  margin-top: 10px;
+}
+
+.matchmaking-screen {
+  padding-bottom: calc(112px + var(--safe-bottom));
+}
+
+.matchmaking-content {
+  gap: 18px;
+}
+
+.duelist-card h2 {
+  margin-bottom: 5px;
+}
+
+.duelist-card p {
+  opacity: 0.82;
+}
+
+.duelist-tags {
+  display: none;
+}
+
+.duel-hud.simplified .duel-topbar {
+  grid-template-columns: minmax(86px, 1fr) auto 40px;
+  padding: calc(9px + var(--safe-top)) calc(10px + var(--safe-right)) 8px calc(10px + var(--safe-left));
+}
+
+.duel-hud.simplified .duel-brand strong {
+  font-size: 0.68rem;
+}
+
+.duel-hud.simplified .duel-brand small {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+}
+
+.duel-hud.simplified .duel-lvl {
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border-radius: 7px;
+}
+
+.duel-timebox.single {
+  min-width: 132px;
+  padding-inline: 12px;
+}
+
+.duel-timebox.single strong {
+  font-size: 1.05rem;
+}
+
+.rep-stage.simple {
+  top: 48%;
+  transform: translateY(-50%);
+  padding-inline: 18px;
+}
+
+.rep-stage.simple > span {
+  max-width: min(92vw, 420px);
+  color: rgba(195, 245, 255, 0.86);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+}
+
+.rep-stage.simple h1 {
+  margin-top: 6px;
+  font-size: clamp(6.5rem, 38vw, 11rem);
+}
+
+.rep-stage.simple h1 small {
+  font-size: 0.34em;
+}
+
+.rep-stage.simple .feedback-toast {
+  min-height: 50px;
+  margin-top: 14px;
+  padding-inline: 26px;
+}
+
+.camera-signal {
+  position: absolute;
+  left: calc(14px + var(--safe-left));
+  right: calc(14px + var(--safe-right));
+  bottom: calc(142px + var(--safe-bottom));
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: rgba(19, 27, 46, 0.76);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.camera-signal > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.camera-signal span,
+.camera-signal strong {
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.camera-signal strong {
+  color: var(--cyan);
+}
+
+.duel-progress.simple {
+  bottom: calc(78px + var(--safe-bottom));
+  height: 56px;
+}
+
+.duel-progress.simple .lead-content {
+  grid-template-columns: 1fr minmax(76px, 34%);
+}
+
+.duel-progress.simple .lead-player {
+  overflow: hidden;
+}
+
+.duel-progress.simple .lead-player div {
+  min-width: 0;
+}
+
+.duel-progress.simple .lead-content strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-screen {
+  padding-bottom: calc(112px + var(--safe-bottom));
+}
+
+.victory-hero.compact-result {
+  margin: 0 0 16px;
+}
+
+.victory-hero.compact-result::before {
+  display: none;
+}
+
+.victory-hero.compact-result h1 {
+  font-size: clamp(3.5rem, 17vw, 5.4rem);
+}
+
+.result-focus {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-left: 4px solid var(--cyan);
+  border-radius: 8px;
+  background: var(--surface-low);
+  box-shadow: var(--shadow);
+}
+
+.result-focus span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.result-focus strong {
+  color: var(--text);
+  font-size: clamp(3rem, 15vw, 5rem);
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.result-focus small {
+  margin-left: 8px;
+  color: var(--cyan);
+  font-size: 0.28em;
+  text-transform: uppercase;
+}
+
+.reward-card.compact {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.reward-card.compact h2 {
+  margin-bottom: 18px;
+}
+
+.reward-card.compact .reward-grid {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 380px) {
+  .mode-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-overview article {
+    min-height: 74px;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .progress-overview small {
+    grid-column: 1 / -1;
+  }
+
+  .duel-timebox.single {
+    min-width: 108px;
+  }
+
+  .duel-hud.simplified .duel-brand strong {
+    font-size: 0.6rem;
+  }
+
+  .camera-signal {
+    bottom: calc(140px + var(--safe-bottom));
+  }
+
+  .duel-progress.simple .lead-content {
+    grid-template-columns: 1fr;
+  }
+
+  .duel-progress.simple .lead-bar {
+    display: none;
+  }
+}

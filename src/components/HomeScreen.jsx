@@ -1,117 +1,138 @@
 import { useState } from 'react';
 import TopBar from './TopBar.jsx';
+import { CHALLENGE_MODES, makeChallenge } from '../utils/progression.js';
 
-export default function HomeScreen({ defaultGoal, onStart }) {
-  const [goal, setGoal] = useState(String(defaultGoal || 20));
+export default function HomeScreen({ progression, defaultGoal, onStart }) {
+  const profile = progression.profile;
+  const stats = progression.stats;
+  const [mode, setMode] = useState(CHALLENGE_MODES.maxReps);
+  const [goal, setGoal] = useState(String(defaultGoal || profile.maxPushups || 20));
   const [error, setError] = useState('');
 
   function handleSubmit(event) {
     event.preventDefault();
     const parsedGoal = Number(goal);
 
-    if (!Number.isInteger(parsedGoal) || parsedGoal < 1 || parsedGoal > 999) {
+    if (mode === CHALLENGE_MODES.fixedGoal && (!Number.isInteger(parsedGoal) || parsedGoal < 1 || parsedGoal > 999)) {
       setError('Entre un objectif entre 1 et 999 pompes.');
       return;
     }
 
     setError('');
-    onStart(parsedGoal);
+    onStart(makeChallenge({ mode, goal: mode === CHALLENGE_MODES.fixedGoal ? parsedGoal : profile.maxPushups }));
   }
 
   return (
     <main className="screen home-screen">
-      <TopBar />
+      <TopBar progression={progression} />
 
-      <section className="arena-hero">
+      <section className="arena-hero compact-hero">
         <div className="arena-bg" aria-hidden="true" />
         <div className="arena-content">
-          <span>Ready for Battle</span>
+          <span>Prêt pour le défi</span>
           <h1>
-            PUSH-UP <em>DEFI</em>
+            PUSH-UP <em>DÉFI</em>
           </h1>
 
           <form className="duel-launcher" onSubmit={handleSubmit} noValidate>
-            <label htmlFor="pushup-goal">Objectif</label>
-            <div className="goal-control">
-              <input
-                id="pushup-goal"
-                inputMode="numeric"
-                min="1"
-                max="999"
-                pattern="[0-9]*"
-                type="number"
-                value={goal}
-                onChange={(event) => setGoal(event.target.value)}
-                required
-              />
-              <span>Pompes</span>
+            <fieldset className="mode-selector">
+              <legend>Type de défi</legend>
+              <label className={mode === CHALLENGE_MODES.maxReps ? 'selected' : ''}>
+                <input
+                  type="radio"
+                  name="challenge-mode"
+                  value={CHALLENGE_MODES.maxReps}
+                  checked={mode === CHALLENGE_MODES.maxReps}
+                  onChange={() => setMode(CHALLENGE_MODES.maxReps)}
+                />
+                <span>Max en 1 min</span>
+              </label>
+              <label className={mode === CHALLENGE_MODES.fixedGoal ? 'selected' : ''}>
+                <input
+                  type="radio"
+                  name="challenge-mode"
+                  value={CHALLENGE_MODES.fixedGoal}
+                  checked={mode === CHALLENGE_MODES.fixedGoal}
+                  onChange={() => setMode(CHALLENGE_MODES.fixedGoal)}
+                />
+                <span>Objectif chrono</span>
+              </label>
+            </fieldset>
+
+            {mode === CHALLENGE_MODES.fixedGoal && (
+              <>
+                <label htmlFor="pushup-goal">Nombre de pompes</label>
+                <div className="goal-control">
+                  <input
+                    id="pushup-goal"
+                    inputMode="numeric"
+                    min="1"
+                    max="999"
+                    pattern="[0-9]*"
+                    type="number"
+                    value={goal}
+                    onChange={(event) => setGoal(event.target.value)}
+                    required
+                  />
+                  <span>Pompes</span>
+                </div>
+              </>
+            )}
+
+            <div className="challenge-note">
+              <span className="material-symbols-outlined filled">
+                {mode === CHALLENGE_MODES.maxReps ? 'timer' : 'bolt'}
+              </span>
+              {mode === CHALLENGE_MODES.maxReps
+                ? 'Faire le maximum de pompes en 60 secondes.'
+                : 'Atteindre ton objectif le plus rapidement possible.'}
             </div>
+
             {error && (
               <p className="form-error" role="alert">
                 {error}
               </p>
             )}
+
             <button className="launch-button" type="submit">
-              <span className="material-symbols-outlined filled">swords</span>
-              Lancer un duel
+              <span className="material-symbols-outlined filled">play_arrow</span>
+              Lancer le défi
             </button>
           </form>
         </div>
       </section>
 
-      <section className="stats-bento" aria-label="Statistiques">
+      <section className="progress-overview" aria-label="Progression">
         <article>
-          <span>Daily Best</span>
-          <strong>78</strong>
-          <small>Reps Today</small>
+          <span>Record 1 min</span>
+          <strong>{stats.bestOneMinute}</strong>
+          <small>pompes</small>
         </article>
         <article>
-          <span>Global Rank</span>
-          <strong>
-            Top 5<em>%</em>
-          </strong>
-          <small>Elite League</small>
+          <span>Total</span>
+          <strong>{stats.totalPushups}</strong>
+          <small>pompes</small>
+        </article>
+        <article>
+          <span>Max déclaré</span>
+          <strong>{profile.maxPushups}</strong>
+          <small>profil</small>
         </article>
       </section>
 
-      <section className="mission-card">
+      <section className="mission-card compact">
         <div className="mission-head">
           <div>
-            <span>Weekly Mission</span>
-            <strong>Master of Volume</strong>
+            <span>Progression</span>
+            <strong>{profile.nickname}</strong>
           </div>
-          <small>1,250 / 2,000</small>
+          <small>Niveau {profile.level}</small>
         </div>
         <div className="mission-track" aria-hidden="true">
-          <div />
+          <div style={{ width: `${Math.min(100, (profile.xp % 500) / 5)}%` }} />
         </div>
-        <p>Earn 500 Coins upon completion</p>
-      </section>
-
-      <section className="activity-feed">
-        <div className="section-title">
-          <h2>Recent Activity</h2>
-          <button type="button">History</button>
-        </div>
-        <Activity icon="workspace_premium" title="vs Alex_Shadow" detail="Duel Won • 55 vs 48" reward="+25 XP" />
-        <Activity icon="close" title="vs MuscleMage" detail="Duel Lost • 62 vs 70" reward="+5 XP" muted />
-        <Activity icon="workspace_premium" title="vs Iron_Push" detail="Duel Won • 40 vs 32" reward="+20 XP" />
+        <p>{profile.xp % 500} / 500 XP avant le prochain niveau</p>
       </section>
     </main>
-  );
-}
-
-function Activity({ icon, title, detail, reward, muted = false }) {
-  return (
-    <article className={`activity-item ${muted ? 'muted' : ''}`}>
-      <div className="activity-icon">
-        <span className="material-symbols-outlined filled">{icon}</span>
-      </div>
-      <div>
-        <strong>{title}</strong>
-        <span>{detail}</span>
-      </div>
-      <small>{reward}</small>
-    </article>
   );
 }

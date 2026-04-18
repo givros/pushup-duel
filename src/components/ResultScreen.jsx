@@ -1,73 +1,63 @@
 import TopBar from './TopBar.jsx';
+import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
-export default function ResultScreen({ result, onRestart, onHome }) {
-  const completed = result.reason === 'completed';
-  const opponentTimeMs = Math.max(result.timeMs + 3700, result.timeMs * 1.16);
-  const deltaSeconds = Math.max(0, (opponentTimeMs - result.timeMs) / 1000).toFixed(1);
+export default function ResultScreen({ result, progression, onRestart, onHome }) {
+  const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
+  const lastResult = progression?.stats?.lastResult;
+  const xpEarned = lastResult?.xpEarned ?? Math.max(5, result.pushups * 2);
+  const coinsEarned = lastResult?.coinsEarned ?? Math.max(2, Math.floor(result.pushups / 2));
+  const bestLabel = isMaxMode
+    ? `${progression?.stats?.bestOneMinute || result.pushups} pompes`
+    : formatBestTime(progression?.stats?.bestFixedTimeMs);
 
   return (
     <main className="screen result-screen">
-      <TopBar compact />
+      <TopBar compact progression={progression} />
 
-      <section className="victory-hero">
-        <p>{completed ? 'Challenge terminé' : 'Challenge stoppé'}</p>
-        <h1>{completed ? 'Victoire' : 'Résultat'}</h1>
+      <section className="victory-hero compact-result">
+        <p>Défi terminé</p>
+        <h1>{isMaxMode ? 'Score' : 'Chrono'}</h1>
       </section>
 
-      <section className="time-comparison">
-        <article className="your-time">
-          <div>
-            <span>Votre temps</span>
-            <strong>
-              {formatSeconds(result.timeMs)}
-              <small>s</small>
-            </strong>
-          </div>
-          <span className="material-symbols-outlined filled">electric_bolt</span>
-        </article>
-        <article className="opponent-time">
-          <div>
-            <span>Adversaire</span>
-            <strong>
-              {formatSeconds(opponentTimeMs)}
-              <small>s</small>
-            </strong>
-          </div>
-          <em>-{deltaSeconds}s</em>
-        </article>
-      </section>
-
-      <section className="reward-card">
-        <h2>Récompenses acquises</h2>
-        <div className="reward-grid">
-          <div>
-            <span className="material-symbols-outlined filled">star</span>
-            <strong>+25 XP</strong>
-          </div>
-          <i />
-          <div>
-            <span className="material-symbols-outlined filled">monetization_on</span>
-            <strong>+10 COINS</strong>
-          </div>
-        </div>
-        <div className="level-row">
-          <span>Prochain niveau</span>
-          <strong>1,275 / 1,500 XP</strong>
-        </div>
-        <div className="level-track">
-          <div />
-        </div>
+      <section className="result-focus">
+        <span>{challengeTitle(result)}</span>
+        <strong>
+          {isMaxMode ? result.pushups : formatSeconds(result.timeMs)}
+          <small>{isMaxMode ? 'pompes' : 's'}</small>
+        </strong>
       </section>
 
       <section className="result-summary">
         <article>
-          <span>Objectif</span>
-          <strong>{result.goal}</strong>
-        </article>
-        <article>
           <span>Pompes</span>
           <strong>{result.pushups}</strong>
         </article>
+        <article>
+          <span>{isMaxMode ? 'Record 1 min' : 'Meilleur chrono'}</span>
+          <strong>{bestLabel}</strong>
+        </article>
+      </section>
+
+      <section className="reward-card compact">
+        <h2>Progression enregistrée</h2>
+        <div className="reward-grid">
+          <div>
+            <span className="material-symbols-outlined filled">star</span>
+            <strong>+{xpEarned} XP</strong>
+          </div>
+          <i />
+          <div>
+            <span className="material-symbols-outlined filled">payments</span>
+            <strong>+{coinsEarned} pièces</strong>
+          </div>
+        </div>
+        <div className="level-row">
+          <span>Niveau {progression?.profile?.level || 1}</span>
+          <strong>{(progression?.profile?.xp || 0) % 500} / 500 XP</strong>
+        </div>
+        <div className="level-track">
+          <div style={{ width: `${Math.min(100, ((progression?.profile?.xp || 0) % 500) / 5)}%` }} />
+        </div>
       </section>
 
       <section className="result-actions">
@@ -84,4 +74,12 @@ export default function ResultScreen({ result, onRestart, onHome }) {
 
 function formatSeconds(milliseconds) {
   return (Math.max(0, milliseconds) / 1000).toFixed(1);
+}
+
+function formatBestTime(milliseconds) {
+  if (typeof milliseconds !== 'number') {
+    return 'Aucun';
+  }
+
+  return `${formatSeconds(milliseconds)} s`;
 }

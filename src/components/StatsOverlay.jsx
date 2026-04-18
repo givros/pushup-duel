@@ -1,78 +1,44 @@
 import { formatTime } from '../utils/timeFormat.js';
+import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
-export default function StatsOverlay({ count, goal, elapsedMs, status, confidence, onStop }) {
+export default function StatsOverlay({ count, challenge, elapsedMs, status, confidence, onStop }) {
   const confidencePercent = Math.round((confidence || 0) * 100);
   const normalizedStatus = status || 'Prêt';
-  const rivalCount = Math.max(0, Math.min(goal, count - 1 + (count > 0 ? 0 : 0)));
-  const lucasCount = Math.max(0, count - 3);
-  const progress = goal > 0 ? Math.min(100, Math.round((count / goal) * 100)) : 0;
+  const isMaxMode = challenge.mode === CHALLENGE_MODES.maxReps;
+  const remainingMs = isMaxMode ? Math.max(0, challenge.durationMs - elapsedMs) : elapsedMs;
+  const progress = isMaxMode
+    ? Math.min(100, Math.round((elapsedMs / challenge.durationMs) * 100))
+    : Math.min(100, Math.round((count / challenge.goal) * 100));
   const feedback = feedbackText(normalizedStatus);
-  const rhythm = confidencePercent >= 62 ? 'STABLE' : 'INSTABLE';
 
   return (
-    <section className="duel-hud" aria-live="polite">
+    <section className="duel-hud simplified" aria-live="polite">
       <header className="duel-topbar">
         <div className="duel-brand">
-          <span className="duel-lvl">LVL 24</span>
+          <span className="duel-lvl">DEF</span>
           <div>
-            <strong>PUSH-UP DEFI</strong>
-            <small>MATCH EN COURS</small>
+            <strong>Push-up Défi</strong>
+            <small>{isMaxMode ? '1 minute' : 'Chrono'}</small>
           </div>
         </div>
 
-        <div className="duel-timebox">
+        <div className="duel-timebox single">
           <div>
-            <span>Timer</span>
-            <strong>{formatTime(elapsedMs)}</strong>
-          </div>
-          <i />
-          <div>
-            <span>Streak</span>
-            <strong className="streak">x{Math.max(1, Math.min(12, count || 1))}</strong>
+            <span>{isMaxMode ? 'Temps restant' : 'Temps'}</span>
+            <strong>{formatTime(remainingMs)}</strong>
           </div>
         </div>
 
-        <div className="duel-actions">
-          <strong>540 COINS</strong>
-          <button className="pause-button" type="button" onClick={onStop} aria-label="Stopper le duel">
-            <span className="material-symbols-outlined">pause</span>
-          </button>
-        </div>
+        <button className="pause-button" type="button" onClick={onStop} aria-label="Stopper le défi">
+          <span className="material-symbols-outlined">pause</span>
+        </button>
       </header>
 
-      <div className="biometric-panel">
-        <span>Analyse biométrique</span>
-        <div className="metric-line">
-          <small>Amplitude</small>
-          <strong>{confidencePercent}%</strong>
-        </div>
-        <div className="thin-track">
-          <div style={{ width: `${confidencePercent}%` }} />
-        </div>
-        <div className="metric-line">
-          <small>Rythme</small>
-          <strong>{rhythm}</strong>
-        </div>
-        <div className="thin-track">
-          <div style={{ width: `${confidencePercent >= 62 ? 78 : 42}%` }} />
-        </div>
-      </div>
-
-      <div className="rival-panel">
-        <div>
-          <span>Rival: Marcus</span>
-          <small>{rivalCount}/{goal}</small>
-        </div>
-        <div className="rival-track">
-          <div style={{ width: `${goal > 0 ? Math.min(100, (rivalCount / goal) * 100) : 0}%` }} />
-        </div>
-      </div>
-
-      <div className="rep-stage">
-        <span>Reps</span>
+      <div className="rep-stage simple">
+        <span>{challengeTitle(challenge)}</span>
         <h1>
           {count}
-          <small>/{goal}</small>
+          {!isMaxMode && <small>/{challenge.goal}</small>}
         </h1>
         <div className={`feedback-toast ${statusClass(normalizedStatus)}`}>
           <span className="material-symbols-outlined filled">{feedback.icon}</span>
@@ -80,21 +46,24 @@ export default function StatsOverlay({ count, goal, elapsedMs, status, confidenc
         </div>
       </div>
 
-      <div className="leaderboard-panel">
-        <span>Classement live</span>
-        <RankLine rank="1." name="Vous" score={count} active />
-        <RankLine rank="2." name="Marcus" score={rivalCount} />
-        <RankLine rank="3." name="Lucas" score={lucasCount} />
+      <div className="camera-signal">
+        <div>
+          <span>Confiance</span>
+          <strong>{confidencePercent}%</strong>
+        </div>
+        <div className="thin-track">
+          <div style={{ width: `${confidencePercent}%` }} />
+        </div>
       </div>
 
-      <div className="duel-progress">
+      <div className="duel-progress simple">
         <div className="lead-fill" style={{ width: `${progress}%` }} />
         <div className="lead-content">
           <div className="lead-player">
-            <span className="material-symbols-outlined filled">person</span>
+            <span className="material-symbols-outlined filled">{isMaxMode ? 'timer' : 'flag'}</span>
             <div>
-              <small>Current Lead</small>
-              <strong>Vous ({count})</strong>
+              <small>{isMaxMode ? 'Défi 1 minute' : 'Objectif'}</small>
+              <strong>{isMaxMode ? `${count} pompes` : `${count}/${challenge.goal} pompes`}</strong>
             </div>
           </div>
           <div className="lead-bar">
@@ -103,28 +72,9 @@ export default function StatsOverlay({ count, goal, elapsedMs, status, confidenc
             </div>
             <strong>{progress}%</strong>
           </div>
-          <div className="lead-rival">
-            <div>
-              <small>Challenger</small>
-              <strong>Marcus ({rivalCount})</strong>
-            </div>
-            <span className="material-symbols-outlined">groups</span>
-          </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function RankLine({ rank, name, score, active = false }) {
-  return (
-    <div className={`rank-line ${active ? 'active' : ''}`}>
-      <div>
-        <strong>{rank}</strong>
-        <span>{name}</span>
-      </div>
-      <small>{score}</small>
-    </div>
   );
 }
 

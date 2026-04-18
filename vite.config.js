@@ -11,9 +11,9 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Push Challenge',
-        short_name: 'Push',
-        description: 'Challenge de pompes avec détection par caméra.',
+        name: 'Push-up Défi',
+        short_name: 'Défi',
+        description: 'Défi de pompes avec détection par caméra.',
         lang: 'fr',
         start_url: '/pushup-duel/',
         scope: '/pushup-duel/',

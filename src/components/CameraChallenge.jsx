@@ -5,6 +5,7 @@ import { useCamera } from '../hooks/useCamera.js';
 import { useChallengeTimer } from '../hooks/useChallengeTimer.js';
 import { getPoseLandmarker } from '../services/poseLandmarkerService.js';
 import { createPushupDetector } from '../utils/pushupDetector.js';
+import { CHALLENGE_MODES } from '../utils/progression.js';
 
 const TARGET_INFERENCE_INTERVAL_MS = 75;
 const TARGET_UI_INTERVAL_MS = 140;
@@ -34,7 +35,8 @@ const initialDetection = {
   phase: 'waitingTop'
 };
 
-export default function CameraChallenge({ goal, onComplete, onCancel }) {
+export default function CameraChallenge({ challenge, onComplete, onCancel }) {
+  const goal = challenge.goal;
   const { videoRef, status: cameraStatus, error: cameraError, start, stop } = useCamera();
   const {
     elapsedMs,
@@ -251,7 +253,14 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
             publishDetection(update, now);
           }
 
-          if (update.count >= goal) {
+          const elapsed = getElapsed();
+
+          if (challenge.mode === CHALLENGE_MODES.maxReps && elapsed >= challenge.durationMs) {
+            finishChallenge('timeup', update.count);
+            return;
+          }
+
+          if (challenge.mode === CHALLENGE_MODES.fixedGoal && update.count >= goal) {
             finishChallenge('completed', update.count);
             return;
           }
@@ -294,7 +303,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [beginCountdown, cameraStatus, finishChallenge, goal, landmarker, videoRef]);
+  }, [beginCountdown, cameraStatus, challenge, finishChallenge, getElapsed, goal, landmarker, videoRef]);
 
   return (
     <main className="challenge-screen">
@@ -303,7 +312,7 @@ export default function CameraChallenge({ goal, onComplete, onCancel }) {
 
       <StatsOverlay
         count={pushups}
-        goal={goal}
+        challenge={challenge}
         elapsedMs={elapsedMs}
         status={detection.status}
         confidence={detection.confidence}

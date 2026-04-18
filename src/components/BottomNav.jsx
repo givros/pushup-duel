@@ -1,8 +1,8 @@
 const navItems = [
-  ['sports_esports', 'Arena'],
+  ['sports_esports', 'Arène'],
   ['groups', 'Social'],
-  ['leaderboard', 'Stats'],
-  ['shopping_cart', 'Shop']
+  ['leaderboard', 'Suivi'],
+  ['shopping_cart', 'Boutique']
 ];
 
 export default function BottomNav() {
