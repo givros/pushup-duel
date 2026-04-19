@@ -45,7 +45,12 @@ export function createProgression({ nickname, maxPushups }) {
       bestOneMinute: 0,
       bestFixedTimeMs: null,
       bestFixedGoal: null,
-      lastResult: null
+      lastResult: null,
+      history: []
+    },
+    settings: {
+      cameraPermission: 'unknown',
+      cameraCheckedAt: null
     },
     createdAt: now,
     updatedAt: now
@@ -70,7 +75,11 @@ export function applyChallengeResult(progression, result) {
       xpEarned,
       coinsEarned,
       completedAt: new Date().toISOString()
-    }
+    },
+    history: [
+      makeHistoryEntry(result, xpEarned, coinsEarned, isDefeat),
+      ...current.stats.history
+    ].slice(0, 100)
   };
 
   if (result.mode === CHALLENGE_MODES.maxReps && result.reason === 'timeup') {
@@ -100,6 +109,23 @@ export function applyChallengeResult(progression, result) {
   });
 }
 
+export function updateProgressionSettings(progression, settings) {
+  const current = normalizeProgression(progression);
+
+  return saveProgression({
+    ...current,
+    settings: {
+      ...current.settings,
+      ...settings
+    },
+    updatedAt: new Date().toISOString()
+  });
+}
+
+export function deleteProgression() {
+  window.localStorage.removeItem(STORAGE_KEY);
+}
+
 export function makeChallenge({ mode, goal }) {
   const nextMode = mode === CHALLENGE_MODES.fixedGoal ? CHALLENGE_MODES.fixedGoal : CHALLENGE_MODES.maxReps;
   const nextGoal = clampInteger(goal, 1, 999, 20);
@@ -122,6 +148,7 @@ export function challengeTitle(challenge) {
 export function normalizeProgression(progression) {
   const profile = progression?.profile || {};
   const stats = progression?.stats || {};
+  const settings = progression?.settings || {};
 
   return {
     onboarded: Boolean(progression?.onboarded),
@@ -139,11 +166,66 @@ export function normalizeProgression(progression) {
       bestOneMinute: clampInteger(stats.bestOneMinute, 0, 999999, 0),
       bestFixedTimeMs: typeof stats.bestFixedTimeMs === 'number' ? Math.max(0, stats.bestFixedTimeMs) : null,
       bestFixedGoal: typeof stats.bestFixedGoal === 'number' ? Math.max(0, stats.bestFixedGoal) : null,
-      lastResult: stats.lastResult || null
+      lastResult: stats.lastResult || null,
+      history: Array.isArray(stats.history) ? stats.history.map(normalizeHistoryEntry).filter(Boolean) : []
+    },
+    settings: {
+      cameraPermission: normalizeCameraPermission(settings.cameraPermission),
+      cameraCheckedAt: typeof settings.cameraCheckedAt === 'string' ? settings.cameraCheckedAt : null
     },
     createdAt: progression?.createdAt || new Date().toISOString(),
     updatedAt: progression?.updatedAt || new Date().toISOString()
   };
+}
+
+function makeHistoryEntry(result, xpEarned, coinsEarned, isDefeat) {
+  const completedAt = new Date().toISOString();
+
+  return {
+    id: `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
+    mode: result.mode,
+    goal: result.goal,
+    durationMs: result.durationMs || null,
+    pushups: clampInteger(result.pushups, 0, 999999, 0),
+    timeMs: Math.max(0, Math.floor(result.timeMs || 0)),
+    reason: result.reason,
+    outcome: isDefeat ? 'defeat' : 'victory',
+    xpEarned,
+    coinsEarned,
+    completedAt
+  };
+}
+
+function normalizeHistoryEntry(entry) {
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+
+  const completedAt = typeof entry.completedAt === 'string' ? entry.completedAt : new Date().toISOString();
+  const reason = typeof entry.reason === 'string' ? entry.reason : 'completed';
+  const outcome = entry.outcome === 'defeat' || reason === 'forfeit' || reason === 'stopped' ? 'defeat' : 'victory';
+
+  return {
+    id: typeof entry.id === 'string' ? entry.id : `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
+    mode: entry.mode === CHALLENGE_MODES.fixedGoal ? CHALLENGE_MODES.fixedGoal : CHALLENGE_MODES.maxReps,
+    goal: clampInteger(entry.goal, 1, 999, 20),
+    durationMs: typeof entry.durationMs === 'number' ? Math.max(0, entry.durationMs) : null,
+    pushups: clampInteger(entry.pushups, 0, 999999, 0),
+    timeMs: typeof entry.timeMs === 'number' ? Math.max(0, entry.timeMs) : 0,
+    reason,
+    outcome,
+    xpEarned: clampInteger(entry.xpEarned, 0, 999999, 0),
+    coinsEarned: clampInteger(entry.coinsEarned, 0, 999999, 0),
+    completedAt
+  };
+}
+
+function normalizeCameraPermission(permission) {
+  if (permission === 'granted' || permission === 'denied') {
+    return permission;
+  }
+
+  return 'unknown';
 }
 
 function sanitizeNickname(value) {

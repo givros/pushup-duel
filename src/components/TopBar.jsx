@@ -1,6 +1,6 @@
 import Icon from './Icon.jsx';
 
-export default function TopBar({ compact = false, progression }) {
+export default function TopBar({ compact = false, progression, onProfileClick }) {
   const profile = progression?.profile || {
     nickname: 'Athlète',
     level: 1,
@@ -12,9 +12,11 @@ export default function TopBar({ compact = false, progression }) {
   return (
     <header className={`top-bar ${compact ? 'top-bar-compact' : ''}`}>
       <div className="player-strip">
-        <div className="avatar avatar-small" aria-hidden="true">
-          <span />
-        </div>
+        <button className="avatar-button" type="button" onClick={onProfileClick} aria-label="Ouvrir le profil">
+          <div className="avatar avatar-small" aria-hidden="true">
+            <span />
+          </div>
+        </button>
         <div className="player-meta">
           <span>{profile.nickname} • Niveau {profile.level}</span>
           {!compact && (

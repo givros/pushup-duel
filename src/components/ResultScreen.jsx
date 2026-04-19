@@ -2,7 +2,7 @@ import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
 import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
-export default function ResultScreen({ result, progression, onRestart, onHome }) {
+export default function ResultScreen({ result, progression, onRestart, onHome, onOpenSettings }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
   const isDefeat = result.reason === 'forfeit' || result.reason === 'stopped';
   const lastResult = progression?.stats?.lastResult;
@@ -14,7 +14,7 @@ export default function ResultScreen({ result, progression, onRestart, onHome })
 
   return (
     <main className="screen result-screen">
-      <TopBar compact progression={progression} />
+      <TopBar compact progression={progression} onProfileClick={onOpenSettings} />
 
       <section className={`victory-hero compact-result ${isDefeat ? 'defeat-result' : ''}`}>
         <p>{isDefeat ? 'Défi annulé' : 'Défi terminé'}</p>

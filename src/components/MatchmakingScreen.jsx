@@ -5,7 +5,7 @@ import { challengeTitle } from '../utils/progression.js';
 
 const MATCHMAKING_DURATION_MS = 3600;
 
-export default function MatchmakingScreen({ challenge, progression, onReady, onCancel }) {
+export default function MatchmakingScreen({ challenge, progression, onReady, onCancel, onOpenSettings }) {
   const [progress, setProgress] = useState(18);
   const nickname = progression?.profile?.nickname || 'Vous';
 
@@ -29,7 +29,7 @@ export default function MatchmakingScreen({ challenge, progression, onReady, onC
 
   return (
     <main className="screen matchmaking-screen">
-      <TopBar compact progression={progression} />
+      <TopBar compact progression={progression} onProfileClick={onOpenSettings} />
 
       <section className="matchmaking-content">
         <div className="versus-heading">

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
+import HistoryList from './HistoryList.jsx';
 import { CHALLENGE_MODES, makeChallenge } from '../utils/progression.js';
 
-export default function HomeScreen({ progression, defaultGoal, onStart }) {
+export default function HomeScreen({ progression, defaultGoal, onStart, onOpenSettings }) {
   const profile = progression.profile;
   const stats = progression.stats;
   const [mode, setMode] = useState(CHALLENGE_MODES.maxReps);
@@ -25,7 +26,7 @@ export default function HomeScreen({ progression, defaultGoal, onStart }) {
 
   return (
     <main className="screen home-screen">
-      <TopBar progression={progression} />
+      <TopBar progression={progression} onProfileClick={onOpenSettings} />
 
       <section className="arena-hero compact-hero">
         <div className="arena-bg" aria-hidden="true" />
@@ -131,6 +132,14 @@ export default function HomeScreen({ progression, defaultGoal, onStart }) {
           <div style={{ width: `${Math.min(100, (profile.xp % 500) / 5)}%` }} />
         </div>
         <p>{profile.xp % 500} / 500 XP avant le prochain niveau</p>
+      </section>
+
+      <section className="home-history">
+        <div className="section-title">
+          <h2>Derniers combats</h2>
+          <button type="button" onClick={onOpenSettings}>Tout voir</button>
+        </div>
+        <HistoryList history={stats.history} limit={3} emptyLabel="Tes 3 derniers combats apparaîtront ici." />
       </section>
     </main>
   );

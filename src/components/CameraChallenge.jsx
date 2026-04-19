@@ -35,7 +35,12 @@ const initialDetection = {
   phase: 'waitingTop'
 };
 
-export default function CameraChallenge({ challenge, onComplete, onCancel }) {
+export default function CameraChallenge({
+  challenge,
+  cameraPermission = 'unknown',
+  onCameraPermissionChange,
+  onComplete
+}) {
   const goal = challenge.goal;
   const { videoRef, status: cameraStatus, error: cameraError, start, stop } = useCamera();
   const {
@@ -73,13 +78,13 @@ export default function CameraChallenge({ challenge, onComplete, onCancel }) {
       return modelError || 'Modèle indisponible';
     }
     if (cameraStatus === 'requesting') {
-      return 'Autorise la caméra';
+      return cameraPermission === 'granted' ? 'Démarrage caméra' : 'Autorise la caméra';
     }
     if (modelStatus === 'loading') {
       return 'Chargement détection';
     }
     return 'Préparation';
-  }, [cameraError, cameraStatus, modelError, modelStatus]);
+  }, [cameraError, cameraPermission, cameraStatus, modelError, modelStatus]);
 
   const finishChallenge = useCallback(
     (reason = 'completed', finalCount = pushupsRef.current) => {
@@ -155,12 +160,24 @@ export default function CameraChallenge({ challenge, onComplete, onCancel }) {
     };
   }, []);
 
+  const requestCamera = useCallback(() => {
+    return start()
+      .then((stream) => {
+        onCameraPermissionChange?.('granted');
+        return stream;
+      })
+      .catch((error) => {
+        onCameraPermissionChange?.('denied');
+        throw error;
+      });
+  }, [onCameraPermissionChange, start]);
+
   useEffect(() => {
-    start().catch(() => {});
+    requestCamera().catch(() => {});
     return () => {
       stop();
     };
-  }, [start, stop]);
+  }, [requestCamera, stop]);
 
   useEffect(() => {
     let active = true;
@@ -332,11 +349,11 @@ export default function CameraChallenge({ challenge, onComplete, onCancel }) {
         <div className="permission-panel" role="alert">
           <p>{setupLabel}</p>
           <div className="permission-actions">
-            <button className="secondary-button" type="button" onClick={onCancel}>
-              Accueil
+            <button className="secondary-button" type="button" onClick={handleStop}>
+              Annuler
             </button>
             {cameraStatus === 'error' && (
-              <button className="primary-button" type="button" onClick={() => start().catch(() => {})}>
+              <button className="primary-button" type="button" onClick={() => requestCamera().catch(() => {})}>
                 Réessayer
               </button>
             )}
