@@ -43,8 +43,11 @@ L'application utilise Supabase Auth en connexion anonyme, puis stocke les donné
 - `player_settings` : réglages utilisateur, dont l'autorisation caméra ;
 - `player_stats` : statistiques agrégées et dernier résultat ;
 - `player_history` : historique des défis.
+- `duel_challenges` : défis asynchrones envoyés et reçus entre joueurs.
 
 La session anonyme permet de garder un profil par navigateur sans écran de login. Le compte applicatif est créé uniquement lorsque l'utilisateur valide l'onboarding.
+
+Les défis reçus sont affichés sur l'accueil. Pour tester le flow complet, créer deux comptes depuis deux navigateurs ou deux profils de navigateur différents, puis lancer un duel depuis le premier compte vers le second.
 
 Dans Supabase :
 

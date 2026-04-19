@@ -1,14 +1,16 @@
 import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
-export default function ResultScreen({ result, opponent, onHome }) {
+export default function ResultScreen({ result, opponent, flow = 'outgoing', onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
   const opponentName = opponent?.pseudo || 'ton adversaire';
+  const isIncomingAnswer = flow === 'incoming';
+  const isAbandoned = result.reason === 'forfeit' || result.reason === 'stopped';
 
   return (
     <main className="screen result-screen async-result-screen">
       <section className="victory-hero compact-result async-result-hero">
         <p>Résultat enregistré</p>
-        <h1>Défi envoyé</h1>
+        <h1>{isAbandoned ? 'Défi annulé' : isIncomingAnswer ? 'Réponse envoyée' : 'Défi envoyé'}</h1>
       </section>
 
       <section className="result-focus async-result-focus">
@@ -41,7 +43,13 @@ export default function ResultScreen({ result, opponent, onHome }) {
         )}
         <div>
           <span>{challengeTitle(result)}</span>
-          <h2>Ton résultat a été envoyé à {opponentName}</h2>
+          <h2>
+            {isAbandoned && !isIncomingAnswer
+              ? `Abandon enregistré. Aucun résultat n’a été envoyé à ${opponentName}`
+              : isIncomingAnswer
+              ? `Ton résultat a été renvoyé à ${opponentName}`
+              : `Ton résultat a été envoyé à ${opponentName}`}
+          </h2>
           {opponent && <p>{opponent.stat} • {opponent.rank}</p>}
         </div>
       </section>

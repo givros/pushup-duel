@@ -1,3 +1,5 @@
+create extension if not exists pgcrypto;
+
 create table if not exists public.player_accounts (
   user_id uuid primary key references auth.users(id) on delete cascade,
   nickname text not null,
@@ -47,25 +49,57 @@ create table if not exists public.player_history (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.duel_challenges (
+  id uuid primary key default gen_random_uuid(),
+  challenger_id uuid not null references public.player_accounts(user_id) on delete cascade,
+  receiver_id uuid not null references public.player_accounts(user_id) on delete cascade,
+  mode text not null check (mode in ('max_reps', 'fixed_goal')),
+  goal integer not null check (goal between 1 and 999),
+  duration_ms integer check (duration_ms is null or duration_ms >= 0),
+  challenger_pushups integer not null default 0 check (challenger_pushups >= 0),
+  challenger_time_ms double precision not null default 0 check (challenger_time_ms >= 0),
+  challenger_reason text not null,
+  challenger_completed_at timestamptz not null default now(),
+  challenger_snapshot jsonb not null default '{}'::jsonb,
+  receiver_pushups integer check (receiver_pushups is null or receiver_pushups >= 0),
+  receiver_time_ms double precision check (receiver_time_ms is null or receiver_time_ms >= 0),
+  receiver_reason text,
+  receiver_completed_at timestamptz,
+  receiver_snapshot jsonb,
+  status text not null default 'pending' check (status in ('pending', 'completed', 'declined', 'cancelled')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (challenger_id <> receiver_id)
+);
+
 create index if not exists player_history_user_completed_idx
 on public.player_history (user_id, completed_at desc);
+
+create index if not exists duel_challenges_receiver_status_idx
+on public.duel_challenges (receiver_id, status, created_at desc);
+
+create index if not exists duel_challenges_challenger_created_idx
+on public.duel_challenges (challenger_id, created_at desc);
 
 alter table public.player_accounts enable row level security;
 alter table public.player_settings enable row level security;
 alter table public.player_stats enable row level security;
 alter table public.player_history enable row level security;
+alter table public.duel_challenges enable row level security;
 
 grant select, insert, update, delete on public.player_accounts to authenticated;
 grant select, insert, update, delete on public.player_settings to authenticated;
 grant select, insert, update, delete on public.player_stats to authenticated;
 grant select, insert, update, delete on public.player_history to authenticated;
+grant select, insert, update, delete on public.duel_challenges to authenticated;
 
 drop policy if exists "Players can read own account" on public.player_accounts;
-create policy "Players can read own account"
+drop policy if exists "Players can read player directory" on public.player_accounts;
+create policy "Players can read player directory"
 on public.player_accounts
 for select
 to authenticated
-using (auth.uid() = user_id);
+using (true);
 
 drop policy if exists "Players can insert own account" on public.player_accounts;
 create policy "Players can insert own account"
@@ -176,6 +210,35 @@ for delete
 to authenticated
 using (auth.uid() = user_id);
 
+drop policy if exists "Players can read own duel challenges" on public.duel_challenges;
+create policy "Players can read own duel challenges"
+on public.duel_challenges
+for select
+to authenticated
+using (auth.uid() = challenger_id or auth.uid() = receiver_id);
+
+drop policy if exists "Players can create sent duel challenges" on public.duel_challenges;
+create policy "Players can create sent duel challenges"
+on public.duel_challenges
+for insert
+to authenticated
+with check (auth.uid() = challenger_id);
+
+drop policy if exists "Players can update own duel challenges" on public.duel_challenges;
+create policy "Players can update own duel challenges"
+on public.duel_challenges
+for update
+to authenticated
+using (auth.uid() = challenger_id or auth.uid() = receiver_id)
+with check (auth.uid() = challenger_id or auth.uid() = receiver_id);
+
+drop policy if exists "Players can delete own duel challenges" on public.duel_challenges;
+create policy "Players can delete own duel challenges"
+on public.duel_challenges
+for delete
+to authenticated
+using (auth.uid() = challenger_id or auth.uid() = receiver_id);
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -207,5 +270,11 @@ execute function public.set_updated_at();
 drop trigger if exists set_player_history_updated_at on public.player_history;
 create trigger set_player_history_updated_at
 before update on public.player_history
+for each row
+execute function public.set_updated_at();
+
+drop trigger if exists set_duel_challenges_updated_at on public.duel_challenges;
+create trigger set_duel_challenges_updated_at
+before update on public.duel_challenges
 for each row
 execute function public.set_updated_at();

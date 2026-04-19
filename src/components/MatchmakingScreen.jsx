@@ -3,7 +3,7 @@ import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
 import { challengeTitle } from '../utils/progression.js';
 
-const OPPONENTS = [
+const FALLBACK_OPPONENTS = [
   { id: 'nox', pseudo: 'Nox_Pulse', stat: 'Record 1 min : 38', rank: 'Rang argent' },
   { id: 'maya', pseudo: 'MayaCore', stat: 'Série : 6 défis', rank: 'Rang or' },
   { id: 'iron', pseudo: 'Iron_Jules', stat: 'Max déclaré : 54', rank: 'Rang platine' },
@@ -19,19 +19,20 @@ const OPPONENTS = [
 const SEARCH_DELAYS = [55, 55, 65, 70, 80, 92, 110, 135, 165, 205, 260, 330, 420, 540, 680];
 const FOUND_PAUSE_MS = 2400;
 
-export default function MatchmakingScreen({ challenge, progression, onReady, onCancel, onOpenSettings }) {
+export default function MatchmakingScreen({ challenge, progression, opponents = [], onReady, onCancel, onOpenSettings }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [phase, setPhase] = useState('searching');
   const [scanProgress, setScanProgress] = useState(8);
   const finalOpponentRef = useRef(null);
-  const currentOpponent = finalOpponentRef.current || OPPONENTS[currentIndex % OPPONENTS.length];
-  const nearbyOpponents = useMemo(() => getNearbyOpponents(currentIndex), [currentIndex]);
+  const candidates = opponents.length > 0 ? opponents : FALLBACK_OPPONENTS;
+  const currentOpponent = finalOpponentRef.current || candidates[currentIndex % candidates.length];
+  const nearbyOpponents = useMemo(() => getNearbyOpponents(candidates, currentIndex), [candidates, currentIndex]);
 
   useEffect(() => {
     let timeoutId = 0;
     let cancelled = false;
     let step = 0;
-    const finalIndex = Math.floor(Math.random() * OPPONENTS.length);
+    const finalIndex = Math.floor(Math.random() * candidates.length);
 
     function tick() {
       if (cancelled) {
@@ -39,7 +40,7 @@ export default function MatchmakingScreen({ challenge, progression, onReady, onC
       }
 
       if (step >= SEARCH_DELAYS.length) {
-        const opponent = OPPONENTS[finalIndex];
+        const opponent = candidates[finalIndex];
         finalOpponentRef.current = opponent;
         setCurrentIndex(finalIndex);
         setScanProgress(100);
@@ -65,7 +66,7 @@ export default function MatchmakingScreen({ challenge, progression, onReady, onC
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [onReady]);
+  }, [candidates, onReady]);
 
   return (
     <main className="screen matchmaking-screen opponent-search-screen">
@@ -132,6 +133,6 @@ function OpponentAvatar({ opponent }) {
   );
 }
 
-function getNearbyOpponents(currentIndex) {
-  return Array.from({ length: 8 }, (_, offset) => OPPONENTS[(currentIndex + offset + 1) % OPPONENTS.length]);
+function getNearbyOpponents(candidates, currentIndex) {
+  return Array.from({ length: 8 }, (_, offset) => candidates[(currentIndex + offset + 1) % candidates.length]);
 }

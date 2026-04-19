@@ -2,9 +2,18 @@ import { useState } from 'react';
 import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
 import HistoryList from './HistoryList.jsx';
-import { CHALLENGE_MODES, makeChallenge } from '../utils/progression.js';
+import { CHALLENGE_MODES, challengeTitle, makeChallenge } from '../utils/progression.js';
 
-export default function HomeScreen({ progression, defaultGoal, onStart, onOpenSettings }) {
+export default function HomeScreen({
+  progression,
+  defaultGoal,
+  incomingChallenges = [],
+  onStart,
+  onAcceptChallenge,
+  onDeclineChallenge,
+  onRefreshChallenges,
+  onOpenSettings
+}) {
   const profile = progression.profile;
   const stats = progression.stats;
   const [mode, setMode] = useState(CHALLENGE_MODES.maxReps);
@@ -100,6 +109,43 @@ export default function HomeScreen({ progression, defaultGoal, onStart, onOpenSe
             </button>
           </form>
         </div>
+      </section>
+
+      <section className="challenge-inbox">
+        <div className="section-title">
+          <h2>Défis reçus</h2>
+          <button type="button" onClick={onRefreshChallenges}>Actualiser</button>
+        </div>
+
+        {incomingChallenges.length > 0 ? (
+          <div className="challenge-list">
+            {incomingChallenges.slice(0, 3).map((duel) => (
+              <article className="challenge-card" key={duel.id}>
+                <div className="challenge-icon" aria-hidden="true">
+                  <Icon name="flag" className="filled" />
+                </div>
+                <div className="challenge-copy">
+                  <span>{challengeTitle(duel.challenge)}</span>
+                  <strong>{duel.opponent.pseudo}</strong>
+                  <p>{duel.challengerResult.pushups} pompes envoyées</p>
+                </div>
+                <div className="challenge-actions">
+                  <button className="primary-button" type="button" onClick={() => onAcceptChallenge(duel)}>
+                    Relever
+                  </button>
+                  <button className="secondary-button icon-only-button" type="button" onClick={() => onDeclineChallenge(duel.id)} aria-label="Refuser le défi">
+                    <Icon name="close" />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="challenge-empty">
+            <Icon name="radio_button_checked" className="filled" />
+            <p>Aucun défi reçu pour le moment.</p>
+          </div>
+        )}
       </section>
 
       <section className="progress-overview" aria-label="Progression">
