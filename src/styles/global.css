@@ -2083,6 +2083,213 @@ button:disabled {
   display: none;
 }
 
+.opponent-search-screen {
+  padding-bottom: calc(100px + var(--safe-bottom));
+}
+
+.opponent-search {
+  display: grid;
+  gap: 20px;
+  justify-items: stretch;
+}
+
+.search-heading {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.search-heading h1 {
+  max-width: 100%;
+  font-size: clamp(2.6rem, 13vw, 4.4rem);
+}
+
+.search-engine {
+  position: relative;
+  min-height: 174px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(19, 27, 46, 0.72), rgba(6, 14, 32, 0.74)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 58px);
+  box-shadow: var(--shadow);
+}
+
+.search-engine.found {
+  border-color: rgba(0, 229, 255, 0.42);
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.18);
+}
+
+.search-spinner {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(0, 229, 255, 0.18);
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  color: var(--cyan);
+  background: rgba(11, 19, 38, 0.74);
+  animation: search-spin 760ms linear infinite;
+}
+
+.search-engine.found .search-spinner {
+  animation: found-pop 360ms ease both;
+  border-color: var(--cyan);
+  border-radius: 8px;
+}
+
+.search-spinner .app-icon {
+  font-size: 1.45rem;
+}
+
+.search-radar {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 18px;
+  opacity: 0.56;
+  animation: scan-flow 720ms linear infinite;
+}
+
+.search-engine.found .search-radar {
+  animation-play-state: paused;
+  opacity: 0.22;
+}
+
+.search-radar span {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: rgba(218, 226, 253, 0.72);
+  background: rgba(34, 42, 61, 0.58);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.opponent-slot {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 15px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--surface-low);
+  box-shadow: var(--shadow);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease;
+}
+
+.opponent-slot.searching {
+  animation: slot-pulse 520ms ease infinite alternate;
+}
+
+.opponent-slot.found {
+  border: 1px solid rgba(0, 229, 255, 0.42);
+}
+
+.opponent-avatar {
+  width: 82px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 229, 255, 0.38);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(218, 226, 253, 0.72) 0 12%, transparent 13%),
+    linear-gradient(160deg, #0f1728, #313a4f 54%, #091124);
+  filter: grayscale(0.35);
+}
+
+.opponent-avatar span {
+  color: rgba(0, 229, 255, 0.82);
+  font-size: 2.1rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  transform: translateY(20px);
+}
+
+.opponent-copy {
+  min-width: 0;
+}
+
+.opponent-copy span,
+.opponent-copy small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.opponent-copy h2 {
+  margin: 5px 0;
+  color: var(--text);
+  font-size: clamp(1.6rem, 8vw, 2.4rem);
+  font-weight: 950;
+  line-height: 0.95;
+}
+
+.opponent-copy p {
+  margin: 0 0 7px;
+  color: var(--cyan);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.search-progress {
+  display: grid;
+  gap: 8px;
+}
+
+@keyframes search-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes found-pop {
+  from {
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes scan-flow {
+  from {
+    transform: translateY(-12px);
+  }
+  to {
+    transform: translateY(12px);
+  }
+}
+
+@keyframes slot-pulse {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+
 .duel-hud.simplified .duel-topbar {
   grid-template-columns: minmax(86px, 1fr) auto auto;
   padding: calc(9px + var(--safe-top)) calc(10px + var(--safe-right)) 8px calc(10px + var(--safe-left));
@@ -2201,6 +2408,11 @@ button:disabled {
   padding-bottom: calc(112px + var(--safe-bottom));
 }
 
+.async-result-screen {
+  padding-top: calc(34px + var(--safe-top));
+  padding-bottom: calc(34px + var(--safe-bottom));
+}
+
 .victory-hero.compact-result {
   margin: 0 0 16px;
 }
@@ -2269,6 +2481,70 @@ button:disabled {
 
 .reward-card.compact .reward-grid {
   margin-bottom: 18px;
+}
+
+.async-result-hero {
+  margin-bottom: 18px;
+}
+
+.async-result-hero h1 {
+  font-size: clamp(3rem, 16vw, 5rem);
+}
+
+.async-result-focus {
+  margin-top: 0;
+}
+
+.async-result-summary strong small {
+  margin-left: 4px;
+  color: var(--cyan);
+  font-size: 0.5em;
+  text-transform: uppercase;
+}
+
+.sent-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--surface-low);
+  box-shadow: var(--shadow);
+}
+
+.sent-card .opponent-avatar {
+  width: 64px;
+  height: 64px;
+}
+
+.sent-card span {
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sent-card h2 {
+  margin: 5px 0;
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.sent-card p {
+  margin: 0;
+  color: rgba(218, 226, 253, 0.72);
+  font-size: 0.78rem;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.result-actions.single-action {
+  grid-template-columns: 1fr;
 }
 
 .avatar-button {

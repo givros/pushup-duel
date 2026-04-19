@@ -1,41 +1,81 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
 import { challengeTitle } from '../utils/progression.js';
 
-const MATCHMAKING_DURATION_MS = 3600;
+const OPPONENTS = [
+  { id: 'nox', pseudo: 'Nox_Pulse', stat: 'Record 1 min : 38', rank: 'Rang argent' },
+  { id: 'maya', pseudo: 'MayaCore', stat: 'Série : 6 défis', rank: 'Rang or' },
+  { id: 'iron', pseudo: 'Iron_Jules', stat: 'Max déclaré : 54', rank: 'Rang platine' },
+  { id: 'kiro', pseudo: 'KiroFlex', stat: 'Précision : 91%', rank: 'Rang argent' },
+  { id: 'lena', pseudo: 'LenaVolt', stat: 'Record 1 min : 44', rank: 'Rang or' },
+  { id: 'axel', pseudo: 'Axel_Drive', stat: 'Duel envoyés : 22', rank: 'Rang bronze' },
+  { id: 'sora', pseudo: 'SoraPush', stat: 'Max déclaré : 61', rank: 'Rang platine' },
+  { id: 'milo', pseudo: 'MiloRush', stat: 'Série : 4 défis', rank: 'Rang argent' },
+  { id: 'jade', pseudo: 'JadeRep', stat: 'Record 1 min : 36', rank: 'Rang argent' },
+  { id: 'marcus', pseudo: 'Marcus Vane', stat: 'Max déclaré : 58', rank: 'Rang élite' }
+];
+
+const SEARCH_DELAYS = [55, 55, 65, 70, 80, 92, 110, 135, 165, 205, 260, 330, 420, 540, 680];
+const FOUND_PAUSE_MS = 2400;
 
 export default function MatchmakingScreen({ challenge, progression, onReady, onCancel, onOpenSettings }) {
-  const [progress, setProgress] = useState(18);
-  const nickname = progression?.profile?.nickname || 'Vous';
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [phase, setPhase] = useState('searching');
+  const [scanProgress, setScanProgress] = useState(8);
+  const finalOpponentRef = useRef(null);
+  const currentOpponent = finalOpponentRef.current || OPPONENTS[currentIndex % OPPONENTS.length];
+  const nearbyOpponents = useMemo(() => getNearbyOpponents(currentIndex), [currentIndex]);
 
   useEffect(() => {
-    const startedAt = performance.now();
-    const intervalId = window.setInterval(() => {
-      const elapsed = performance.now() - startedAt;
-      const nextProgress = Math.min(100, 18 + (elapsed / MATCHMAKING_DURATION_MS) * 82);
-      setProgress(nextProgress);
+    let timeoutId = 0;
+    let cancelled = false;
+    let step = 0;
+    const finalIndex = Math.floor(Math.random() * OPPONENTS.length);
 
-      if (nextProgress >= 100) {
-        window.clearInterval(intervalId);
-        window.setTimeout(onReady, 260);
+    function tick() {
+      if (cancelled) {
+        return;
       }
-    }, 90);
+
+      if (step >= SEARCH_DELAYS.length) {
+        const opponent = OPPONENTS[finalIndex];
+        finalOpponentRef.current = opponent;
+        setCurrentIndex(finalIndex);
+        setScanProgress(100);
+        setPhase('found');
+
+        timeoutId = window.setTimeout(() => {
+          if (!cancelled) {
+            onReady(opponent);
+          }
+        }, FOUND_PAUSE_MS);
+        return;
+      }
+
+      setCurrentIndex((current) => current + 1);
+      setScanProgress(Math.min(96, Math.round(((step + 1) / SEARCH_DELAYS.length) * 100)));
+      timeoutId = window.setTimeout(tick, SEARCH_DELAYS[step]);
+      step += 1;
+    }
+
+    timeoutId = window.setTimeout(tick, SEARCH_DELAYS[0]);
 
     return () => {
-      window.clearInterval(intervalId);
+      cancelled = true;
+      window.clearTimeout(timeoutId);
     };
   }, [onReady]);
 
   return (
-    <main className="screen matchmaking-screen">
+    <main className="screen matchmaking-screen opponent-search-screen">
       <TopBar compact progression={progression} onProfileClick={onOpenSettings} />
 
-      <section className="matchmaking-content">
-        <div className="versus-heading">
-          <p>Préparation du défi</p>
+      <section className="opponent-search">
+        <div className="versus-heading search-heading">
+          <p>{phase === 'found' ? 'Adversaire trouvé' : 'Recherche d’un adversaire...'}</p>
           <h1>
-            Push-up <span>Défi</span>
+            Duel <span>asynchrone</span>
           </h1>
           <div className="mode-chip">
             <Icon name="bolt" className="filled" />
@@ -43,53 +83,55 @@ export default function MatchmakingScreen({ challenge, progression, onReady, onC
           </div>
         </div>
 
-        <DuelistCard
-          tone="player"
-          badge="Vous"
-          name={nickname}
-          meta="Profil prêt"
-        />
-
-        <div className="vs-orb" aria-hidden="true">
-          <span>VS</span>
+        <div className={`search-engine ${phase}`}>
+          <div className="search-spinner" aria-hidden="true">
+            <Icon name={phase === 'found' ? 'check_circle' : 'radio_button_checked'} className="filled" />
+          </div>
+          <div className="search-radar" aria-hidden="true">
+            {nearbyOpponents.map((opponent, index) => (
+              <span key={`${opponent.id}-${index}`}>{opponent.pseudo}</span>
+            ))}
+          </div>
         </div>
 
-        <DuelistCard
-          tone="opponent"
-          badge="Rival"
-          name="Marcus Vane"
-          meta="Rival simulé"
-        />
+        <section className={`opponent-slot ${phase}`}>
+          <OpponentAvatar opponent={currentOpponent} />
+          <div className="opponent-copy">
+            <span>{phase === 'found' ? 'Profil sélectionné' : 'Analyse du profil'}</span>
+            <h2>{currentOpponent.pseudo}</h2>
+            <p>{currentOpponent.stat}</p>
+            <small>{currentOpponent.rank}</small>
+          </div>
+        </section>
 
-        <div className="sync-block">
+        <div className="search-progress">
           <div className="sync-row">
-            <span>Synchronisation...</span>
-            <strong>{Math.round(progress)}%</strong>
+            <span>{phase === 'found' ? 'Connexion prête' : 'Joueurs en recherche'}</span>
+            <strong>{scanProgress}%</strong>
           </div>
           <div className="sync-track">
-            <div style={{ width: `${progress}%` }} />
+            <div style={{ width: `${scanProgress}%` }} />
           </div>
-          <p>Préparation de la caméra et du chrono</p>
         </div>
 
-        <button className="ghost-cancel" type="button" onClick={onCancel}>
-          Annuler
-        </button>
+        {phase === 'searching' && (
+          <button className="ghost-cancel" type="button" onClick={onCancel}>
+            Annuler
+          </button>
+        )}
       </section>
     </main>
   );
 }
 
-function DuelistCard({ tone, badge, name, meta }) {
+function OpponentAvatar({ opponent }) {
   return (
-    <article className={`duelist-card ${tone}`}>
-      <div className="duelist-portrait" aria-hidden="true">
-        <div className="portrait-head" />
-        <div className="portrait-shoulders" />
-      </div>
-      <span className="duelist-badge">{badge}</span>
-      <h2>{name}</h2>
-      <p>{meta}</p>
-    </article>
+    <div className={`opponent-avatar opponent-${opponent.id}`} aria-hidden="true">
+      <span>{opponent.pseudo.slice(0, 1)}</span>
+    </div>
   );
+}
+
+function getNearbyOpponents(currentIndex) {
+  return Array.from({ length: 8 }, (_, offset) => OPPONENTS[(currentIndex + offset + 1) % OPPONENTS.length]);
 }

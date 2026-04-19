@@ -35,6 +35,7 @@ export default function App() {
     return makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: saved?.profile?.maxPushups || 20 });
   });
   const [result, setResult] = useState(null);
+  const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [challengeKey, setChallengeKey] = useState(0);
 
   const updateCameraPermission = useCallback((cameraPermission) => {
@@ -60,11 +61,13 @@ export default function App() {
   function startChallenge(nextChallenge) {
     setChallenge(nextChallenge);
     setResult(null);
+    setSelectedOpponent(null);
     setChallengeKey((key) => key + 1);
     setScreen(screens.matchmaking);
   }
 
-  function enterChallenge() {
+  function enterChallenge(opponent) {
+    setSelectedOpponent(opponent);
     setScreen(screens.challenge);
   }
 
@@ -137,9 +140,8 @@ export default function App() {
         <ResultScreen
           result={result}
           progression={progression}
-          onRestart={() => startChallenge(makeChallenge({ mode: result.mode, goal: result.goal }))}
+          opponent={selectedOpponent}
           onHome={goHome}
-          onOpenSettings={openSettings}
         />
       )}
 
@@ -152,7 +154,7 @@ export default function App() {
         />
       )}
 
-      {progression?.onboarded && <BottomNav />}
+      {progression?.onboarded && screen !== screens.result && <BottomNav />}
     </div>
   );
 }

@@ -96,7 +96,7 @@ export default function HomeScreen({ progression, defaultGoal, onStart, onOpenSe
 
             <button className="launch-button" type="submit">
               <Icon name="play_arrow" className="filled" />
-              Lancer le défi
+              Lancer un duel
             </button>
           </form>
         </div>
