@@ -49,6 +49,8 @@ La session anonyme permet de garder un profil par navigateur sans écran de logi
 
 Les défis reçus sont affichés sur l'accueil. Pour tester le flow complet, créer deux comptes depuis deux navigateurs ou deux profils de navigateur différents, puis lancer un duel depuis le premier compte vers le second.
 
+Un duel envoyé reste en attente tant que l'adversaire n'a pas terminé son score. Quand les deux scores sont disponibles, l'application compare automatiquement les résultats et met à jour l'écran de résultat ainsi que l'historique en victoire, défaite ou égalité.
+
 Dans Supabase :
 
 1. Créer un projet Supabase.

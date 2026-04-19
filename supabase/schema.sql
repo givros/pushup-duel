@@ -41,13 +41,18 @@ create table if not exists public.player_history (
   pushups integer not null default 0 check (pushups >= 0),
   time_ms double precision not null default 0 check (time_ms >= 0),
   reason text not null,
-  outcome text not null check (outcome in ('victory', 'defeat')),
+  outcome text not null check (outcome in ('victory', 'defeat', 'pending', 'draw')),
   xp_earned integer not null default 0 check (xp_earned >= 0),
   coins_earned integer not null default 0 check (coins_earned >= 0),
   completed_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.player_history drop constraint if exists player_history_outcome_check;
+alter table public.player_history
+add constraint player_history_outcome_check
+check (outcome in ('victory', 'defeat', 'pending', 'draw'));
 
 create table if not exists public.duel_challenges (
   id uuid primary key default gen_random_uuid(),

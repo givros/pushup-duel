@@ -1,16 +1,19 @@
-import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
+import { CHALLENGE_MODES, RESULT_OUTCOMES, challengeTitle } from '../utils/progression.js';
 
 export default function ResultScreen({ result, opponent, flow = 'outgoing', onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
-  const opponentName = opponent?.pseudo || 'ton adversaire';
+  const opponentName = opponent?.pseudo || result.opponentName || 'votre adversaire';
   const isIncomingAnswer = flow === 'incoming';
-  const isAbandoned = result.reason === 'forfeit' || result.reason === 'stopped';
+  const outcome = result.duelOutcome || result.outcome || RESULT_OUTCOMES.pending;
+  const isPending = outcome === RESULT_OUTCOMES.pending;
+  const isDefeat = outcome === RESULT_OUTCOMES.defeat;
+  const hasOpponentScore = typeof result.opponentPushups === 'number';
 
   return (
-    <main className="screen result-screen async-result-screen">
-      <section className="victory-hero compact-result async-result-hero">
-        <p>Résultat enregistré</p>
-        <h1>{isAbandoned ? 'Défi annulé' : isIncomingAnswer ? 'Réponse envoyée' : 'Défi envoyé'}</h1>
+    <main className={`screen result-screen async-result-screen ${isPending ? 'pending-duel-result' : ''}`}>
+      <section className={`victory-hero compact-result async-result-hero ${isDefeat ? 'defeat-result' : ''} ${isPending ? 'pending-result' : ''}`}>
+        <p>{isPending ? 'Duel envoyé' : 'Résultat final'}</p>
+        <h1>{getResultTitle(outcome)}</h1>
       </section>
 
       <section className="result-focus async-result-focus">
@@ -43,14 +46,15 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
         )}
         <div>
           <span>{challengeTitle(result)}</span>
-          <h2>
-            {isAbandoned && !isIncomingAnswer
-              ? `Abandon enregistré. Aucun résultat n’a été envoyé à ${opponentName}`
-              : isIncomingAnswer
-              ? `Ton résultat a été renvoyé à ${opponentName}`
-              : `Ton résultat a été envoyé à ${opponentName}`}
-          </h2>
-          {opponent && <p>{opponent.stat} • {opponent.rank}</p>}
+          <h2>{getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
+          {hasOpponentScore ? (
+            <p>
+              Score adversaire : {result.opponentPushups} pompes
+              {typeof result.opponentTimeMs === 'number' ? ` en ${formatSeconds(result.opponentTimeMs)}s` : ''}
+            </p>
+          ) : (
+            opponent && <p>{opponent.stat} • {opponent.rank}</p>
+          )}
         </div>
       </section>
 
@@ -61,6 +65,44 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
       </section>
     </main>
   );
+}
+
+function getResultTitle(outcome) {
+  if (outcome === RESULT_OUTCOMES.victory) {
+    return 'Victoire';
+  }
+
+  if (outcome === RESULT_OUTCOMES.defeat) {
+    return 'Défaite';
+  }
+
+  if (outcome === RESULT_OUTCOMES.draw) {
+    return 'Égalité';
+  }
+
+  return 'En attente';
+}
+
+function getResultMessage({ outcome, isIncomingAnswer, opponentName }) {
+  if (outcome === RESULT_OUTCOMES.pending) {
+    return 'En attente du score de votre adversaire';
+  }
+
+  if (outcome === RESULT_OUTCOMES.victory) {
+    return `Tu passes devant ${opponentName}.`;
+  }
+
+  if (outcome === RESULT_OUTCOMES.defeat) {
+    return `Le score de ${opponentName} est meilleur.`;
+  }
+
+  if (outcome === RESULT_OUTCOMES.draw) {
+    return `Score identique avec ${opponentName}.`;
+  }
+
+  return isIncomingAnswer
+    ? `Ton résultat a été renvoyé à ${opponentName}.`
+    : `Ton résultat a été envoyé à ${opponentName}.`;
 }
 
 function formatSeconds(milliseconds) {

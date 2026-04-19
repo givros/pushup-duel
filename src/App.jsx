@@ -9,11 +9,15 @@ import SettingsScreen from './components/SettingsScreen.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import {
   CHALLENGE_MODES,
+  RESULT_OUTCOMES,
   applyChallengeResult,
   createProgression,
+  getDuelHistoryId,
   makeChallenge,
+  updateDuelHistoryOutcome,
   updateProgressionSettings
 } from './utils/progression.js';
+import { getDuelOutcome, getOpponentResult } from './utils/duelOutcome.js';
 import { isSupabaseConfigured } from './services/supabaseClient.js';
 import {
   deleteRemoteProgression,
@@ -24,7 +28,9 @@ import {
   completeIncomingChallenge,
   createOutgoingChallenge,
   declineIncomingChallenge,
+  getDuelChallenge,
   listIncomingChallenges,
+  listCompletedDuelChallenges,
   listOpponentCandidates
 } from './services/duelChallengeService.js';
 
@@ -112,6 +118,37 @@ export default function App() {
     }
   }, []);
 
+  const syncCompletedDuelOutcomes = useCallback(async () => {
+    const currentProgression = progressionRef.current;
+
+    if (!currentProgression?.onboarded) {
+      return;
+    }
+
+    const completedDuels = await listCompletedDuelChallenges();
+    let nextProgression = currentProgression;
+    let changed = false;
+
+    completedDuels.forEach((duel) => {
+      const outcome = getDuelOutcome(duel, duel.role);
+      const resolvedProgression = updateDuelHistoryOutcome(nextProgression, {
+        duelId: duel.id,
+        role: duel.role,
+        outcome,
+        opponentResult: getOpponentResult(duel, duel.role)
+      });
+
+      if (resolvedProgression) {
+        nextProgression = resolvedProgression;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      await persistProgression(nextProgression);
+    }
+  }, [persistProgression]);
+
   const refreshIncomingChallenges = useCallback(async () => {
     if (!progressionRef.current?.onboarded) {
       setIncomingChallenges([]);
@@ -121,16 +158,59 @@ export default function App() {
     try {
       const challenges = await listIncomingChallenges();
       setIncomingChallenges(challenges);
+      await syncCompletedDuelOutcomes();
     } catch (error) {
       setSyncError(getSyncErrorMessage(error));
     }
-  }, []);
+  }, [syncCompletedDuelOutcomes]);
 
   useEffect(() => {
     if (bootStatus === 'ready' && progression?.onboarded) {
       refreshIncomingChallenges();
     }
   }, [bootStatus, progression?.onboarded, refreshIncomingChallenges]);
+
+  useEffect(() => {
+    if (
+      screen !== screens.result ||
+      result?.duelOutcome !== RESULT_OUTCOMES.pending ||
+      !result?.duelId ||
+      !result?.duelRole
+    ) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    let intervalId = 0;
+
+    async function refreshDuelResult() {
+      try {
+        const duel = await getDuelChallenge(result.duelId);
+        const outcome = getDuelOutcome(duel, result.duelRole);
+
+        if (cancelled || outcome === RESULT_OUTCOMES.pending) {
+          return;
+        }
+
+        const resolvedResult = decorateResultWithDuel(result, duel, result.duelRole);
+        setResult((current) => (current?.duelId === result.duelId ? resolvedResult : current));
+        resolveDuelInProgression(duel, result.duelRole);
+        window.clearInterval(intervalId);
+      } catch (error) {
+        if (!cancelled) {
+          setSyncError(getSyncErrorMessage(error));
+        }
+      }
+    }
+
+    refreshDuelResult();
+    intervalId = window.setInterval(refreshDuelResult, 4500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [result, screen]);
 
   const updateCameraPermission = useCallback((cameraPermission) => {
     const currentProgression = progressionRef.current;
@@ -201,48 +281,107 @@ export default function App() {
     }
   }
 
-  function completeChallenge(nextResult) {
+  function resolveDuelInProgression(duel, role) {
+    const currentProgression = progressionRef.current;
+    const outcome = getDuelOutcome(duel, role);
+
+    if (!currentProgression?.onboarded || outcome === RESULT_OUTCOMES.pending) {
+      return;
+    }
+
+    const resolvedProgression = updateDuelHistoryOutcome(currentProgression, {
+      duelId: duel.id,
+      role,
+      outcome,
+      opponentResult: getOpponentResult(duel, role)
+    });
+
+    if (resolvedProgression) {
+      progressionRef.current = resolvedProgression;
+      setProgression(resolvedProgression);
+      persistProgression(resolvedProgression).catch(() => undefined);
+    }
+  }
+
+  async function completeChallenge(nextResult) {
     const currentProgression = progressionRef.current;
     const resultWithMode = {
       ...nextResult,
       mode: challenge.mode,
       durationMs: challenge.durationMs
     };
-    setResult(resultWithMode);
+    let displayResult = {
+      ...resultWithMode,
+      outcome: getLocalOutcome(resultWithMode)
+    };
+    let progressionOptions = {
+      outcome: displayResult.outcome
+    };
+
     if (currentProgression?.onboarded) {
-      const nextProgression = applyChallengeResult(currentProgression, resultWithMode);
+      try {
+        if (activeDuel?.type === 'incoming') {
+          const completedDuel = await completeIncomingChallenge({
+            duel: activeDuel.duel,
+            result: resultWithMode,
+            progression: currentProgression
+          });
+
+          if (completedDuel) {
+            displayResult = decorateResultWithDuel(resultWithMode, completedDuel, 'receiver');
+            progressionOptions = makeDuelProgressionOptions(completedDuel, 'receiver', displayResult);
+            setIncomingChallenges((current) => current.filter((duel) => duel.id !== activeDuel.duel.id));
+          } else {
+            displayResult = makePendingResult(resultWithMode, activeDuel.duel.opponent);
+            progressionOptions = {
+              outcome: RESULT_OUTCOMES.pending,
+              opponentName: activeDuel.duel.opponent?.pseudo || null
+            };
+          }
+        } else if (shouldSendOutgoingDuel(resultWithMode, activeDuel, selectedOpponent)) {
+          const sentDuel = await createOutgoingChallenge({
+            challenge,
+            result: resultWithMode,
+            opponent: selectedOpponent,
+            progression: currentProgression
+          });
+
+          if (sentDuel) {
+            displayResult = decorateResultWithDuel(resultWithMode, sentDuel, 'challenger');
+            progressionOptions = makeDuelProgressionOptions(sentDuel, 'challenger', displayResult);
+          } else {
+            displayResult = makePendingResult(resultWithMode, selectedOpponent);
+            progressionOptions = {
+              outcome: RESULT_OUTCOMES.pending,
+              opponentName: selectedOpponent?.pseudo || null
+            };
+          }
+        } else if (!activeDuel && !isAbandonedResult(resultWithMode)) {
+          displayResult = makePendingResult(resultWithMode, selectedOpponent);
+          progressionOptions = {
+            outcome: RESULT_OUTCOMES.pending,
+            opponentName: selectedOpponent?.pseudo || null
+          };
+        }
+      } catch (error) {
+        setSyncError(getSyncErrorMessage(error));
+
+        if (!isAbandonedResult(resultWithMode)) {
+          displayResult = makePendingResult(resultWithMode, selectedOpponent);
+          progressionOptions = {
+            outcome: RESULT_OUTCOMES.pending,
+            opponentName: selectedOpponent?.pseudo || null
+          };
+        }
+      }
+
+      const nextProgression = applyChallengeResult(currentProgression, displayResult, progressionOptions);
       progressionRef.current = nextProgression;
       setProgression(nextProgression);
       persistProgression(nextProgression).catch(() => undefined);
     }
 
-    if (currentProgression?.onboarded && activeDuel?.type === 'incoming') {
-      completeIncomingChallenge({
-        duel: activeDuel.duel,
-        result: resultWithMode,
-        progression: currentProgression
-      })
-        .then(() => {
-          setIncomingChallenges((current) => current.filter((duel) => duel.id !== activeDuel.duel.id));
-        })
-        .catch((error) => setSyncError(getSyncErrorMessage(error)));
-    }
-
-    if (
-      currentProgression?.onboarded &&
-      !activeDuel &&
-      selectedOpponent?.userId &&
-      resultWithMode.reason !== 'forfeit' &&
-      resultWithMode.reason !== 'stopped'
-    ) {
-      createOutgoingChallenge({
-        challenge: resultWithMode,
-        result: resultWithMode,
-        opponent: selectedOpponent,
-        progression: currentProgression
-      }).catch((error) => setSyncError(getSyncErrorMessage(error)));
-    }
-
+    setResult(displayResult);
     setScreen(screens.result);
   }
 
@@ -375,6 +514,60 @@ export default function App() {
       {progression?.onboarded && screen !== screens.result && <BottomNav />}
     </div>
   );
+}
+
+function decorateResultWithDuel(result, duel, role) {
+  const outcome = getDuelOutcome(duel, role);
+  const opponentResult = getOpponentResult(duel, role);
+
+  return {
+    ...result,
+    mode: duel.challenge.mode,
+    goal: duel.challenge.goal,
+    durationMs: duel.challenge.durationMs,
+    outcome,
+    duelId: duel.id,
+    duelRole: role,
+    duelStatus: duel.status,
+    duelOutcome: outcome,
+    opponentName: duel.opponent?.pseudo || result.opponentName || null,
+    opponentPushups: opponentResult?.pushups ?? null,
+    opponentTimeMs: opponentResult?.timeMs ?? null
+  };
+}
+
+function makeDuelProgressionOptions(duel, role, result) {
+  return {
+    outcome: result.outcome,
+    historyId: getDuelHistoryId(duel.id, role),
+    duelId: duel.id,
+    duelRole: role,
+    opponentName: duel.opponent?.pseudo || null,
+    opponentPushups: result.opponentPushups,
+    opponentTimeMs: result.opponentTimeMs
+  };
+}
+
+function makePendingResult(result, opponent) {
+  return {
+    ...result,
+    outcome: RESULT_OUTCOMES.pending,
+    duelOutcome: RESULT_OUTCOMES.pending,
+    duelStatus: 'pending',
+    opponentName: opponent?.pseudo || null
+  };
+}
+
+function shouldSendOutgoingDuel(result, activeDuel, opponent) {
+  return !activeDuel && Boolean(opponent?.userId) && !isAbandonedResult(result);
+}
+
+function getLocalOutcome(result) {
+  return isAbandonedResult(result) ? RESULT_OUTCOMES.defeat : RESULT_OUTCOMES.victory;
+}
+
+function isAbandonedResult(result) {
+  return result.reason === 'forfeit' || result.reason === 'stopped';
 }
 
 function SystemScreen({ title, message, children }) {

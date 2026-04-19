@@ -1,5 +1,5 @@
 import Icon from './Icon.jsx';
-import { CHALLENGE_MODES } from '../utils/progression.js';
+import { CHALLENGE_MODES, RESULT_OUTCOMES } from '../utils/progression.js';
 
 export default function HistoryList({ history = [], limit = null, emptyLabel = 'Aucun combat enregistré.' }) {
   const visibleHistory = typeof limit === 'number' ? history.slice(0, limit) : history;
@@ -11,15 +11,15 @@ export default function HistoryList({ history = [], limit = null, emptyLabel = '
   return (
     <div className="history-list">
       {visibleHistory.map((entry) => {
-        const isDefeat = entry.outcome === 'defeat';
+        const state = getHistoryState(entry);
 
         return (
-          <article className={`history-item ${isDefeat ? 'defeat' : ''}`} key={entry.id}>
+          <article className={`history-item ${state.className}`} key={entry.id}>
             <div className="history-icon">
-              <Icon name={isDefeat ? 'close' : 'check_circle'} className="filled" />
+              <Icon name={state.icon} className="filled" />
             </div>
             <div className="history-copy">
-              <strong>{isDefeat ? 'Défaite' : 'Victoire'}</strong>
+              <strong>{state.label}</strong>
               <span>
                 {modeLabel(entry)} • {formatDate(entry.completedAt)}
               </span>
@@ -33,6 +33,38 @@ export default function HistoryList({ history = [], limit = null, emptyLabel = '
       })}
     </div>
   );
+}
+
+function getHistoryState(entry) {
+  if (entry.outcome === RESULT_OUTCOMES.defeat) {
+    return {
+      className: 'defeat',
+      icon: 'close',
+      label: 'Défaite'
+    };
+  }
+
+  if (entry.outcome === RESULT_OUTCOMES.pending) {
+    return {
+      className: 'pending',
+      icon: 'timer',
+      label: 'En attente'
+    };
+  }
+
+  if (entry.outcome === RESULT_OUTCOMES.draw) {
+    return {
+      className: 'draw',
+      icon: 'radio_button_checked',
+      label: 'Égalité'
+    };
+  }
+
+  return {
+    className: '',
+    icon: 'check_circle',
+    label: 'Victoire'
+  };
 }
 
 function modeLabel(entry) {

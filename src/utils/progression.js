@@ -3,6 +3,13 @@ export const CHALLENGE_MODES = {
   fixedGoal: 'fixed_goal'
 };
 
+export const RESULT_OUTCOMES = {
+  victory: 'victory',
+  defeat: 'defeat',
+  pending: 'pending',
+  draw: 'draw'
+};
+
 export const ONE_MINUTE_MS = 60_000;
 
 export function createProgression({ nickname, maxPushups }) {
@@ -36,14 +43,16 @@ export function createProgression({ nickname, maxPushups }) {
   });
 }
 
-export function applyChallengeResult(progression, result) {
+export function applyChallengeResult(progression, result, options = {}) {
   const current = normalizeProgression(progression);
   const isCompleted = result.reason === 'completed' || result.reason === 'timeup';
-  const isDefeat = result.reason === 'forfeit' || result.reason === 'stopped';
+  const outcome = normalizeOutcome(options.outcome || result.outcome || defaultOutcomeForResult(result));
+  const isDefeat = outcome === RESULT_OUTCOMES.defeat;
   const xpEarned = isDefeat ? 0 : Math.max(5, result.pushups * 2 + (isCompleted ? 10 : 0));
   const coinsEarned = isDefeat ? 0 : Math.max(2, Math.floor(result.pushups / 2) + (isCompleted ? 5 : 0));
   const nextXp = current.profile.xp + xpEarned;
   const nextLevel = 1 + Math.floor(nextXp / 500);
+  const historyEntry = makeHistoryEntry(result, xpEarned, coinsEarned, outcome, options);
   const nextStats = {
     ...current.stats,
     sessions: current.stats.sessions + 1,
@@ -51,12 +60,13 @@ export function applyChallengeResult(progression, result) {
     totalPushups: current.stats.totalPushups + result.pushups,
     lastResult: {
       ...result,
+      outcome,
       xpEarned,
       coinsEarned,
       completedAt: new Date().toISOString()
     },
     history: [
-      makeHistoryEntry(result, xpEarned, coinsEarned, isDefeat),
+      historyEntry,
       ...current.stats.history
     ].slice(0, 100)
   };
@@ -86,6 +96,66 @@ export function applyChallengeResult(progression, result) {
     stats: nextStats,
     updatedAt: new Date().toISOString()
   });
+}
+
+export function updateDuelHistoryOutcome(progression, { duelId, role, outcome, opponentResult = null }) {
+  const current = normalizeProgression(progression);
+  const nextOutcome = normalizeOutcome(outcome);
+  const historyId = getDuelHistoryId(duelId, role);
+  let previousOutcome = null;
+  let changed = false;
+
+  const nextHistory = current.stats.history.map((entry) => {
+    if (entry.id !== historyId || entry.outcome === nextOutcome) {
+      return entry;
+    }
+
+    previousOutcome = entry.outcome;
+    changed = true;
+    return {
+      ...entry,
+      outcome: nextOutcome,
+      opponentPushups: opponentResult?.pushups ?? entry.opponentPushups ?? null,
+      opponentTimeMs: opponentResult?.timeMs ?? entry.opponentTimeMs ?? null
+    };
+  });
+
+  const lastResult = current.stats.lastResult;
+  const shouldUpdateLastResult = lastResult?.duelId === duelId && lastResult?.duelRole === role;
+
+  if (shouldUpdateLastResult && lastResult.outcome !== nextOutcome) {
+    changed = true;
+  }
+
+  if (!changed) {
+    return null;
+  }
+
+  const defeatDelta = nextOutcome === RESULT_OUTCOMES.defeat && previousOutcome !== RESULT_OUTCOMES.defeat ? 1 : 0;
+
+  return normalizeProgression({
+    ...current,
+    stats: {
+      ...current.stats,
+      defeats: current.stats.defeats + defeatDelta,
+      lastResult: shouldUpdateLastResult
+        ? {
+            ...lastResult,
+            outcome: nextOutcome,
+            duelOutcome: nextOutcome,
+            duelStatus: 'completed',
+            opponentPushups: opponentResult?.pushups ?? lastResult.opponentPushups ?? null,
+            opponentTimeMs: opponentResult?.timeMs ?? lastResult.opponentTimeMs ?? null
+          }
+        : lastResult,
+      history: nextHistory
+    },
+    updatedAt: new Date().toISOString()
+  });
+}
+
+export function getDuelHistoryId(duelId, role) {
+  return `${role}-${duelId}`;
 }
 
 export function updateProgressionSettings(progression, settings) {
@@ -153,18 +223,23 @@ export function normalizeProgression(progression) {
   };
 }
 
-function makeHistoryEntry(result, xpEarned, coinsEarned, isDefeat) {
+function makeHistoryEntry(result, xpEarned, coinsEarned, outcome, options) {
   const completedAt = new Date().toISOString();
 
   return {
-    id: `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
+    id: options.historyId || `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
     mode: result.mode,
     goal: result.goal,
     durationMs: result.durationMs || null,
     pushups: clampInteger(result.pushups, 0, 999999, 0),
     timeMs: Math.max(0, Math.floor(result.timeMs || 0)),
     reason: result.reason,
-    outcome: isDefeat ? 'defeat' : 'victory',
+    outcome,
+    duelId: options.duelId || result.duelId || null,
+    duelRole: options.duelRole || result.duelRole || null,
+    opponentName: options.opponentName || result.opponentName || null,
+    opponentPushups: options.opponentPushups ?? result.opponentPushups ?? null,
+    opponentTimeMs: options.opponentTimeMs ?? result.opponentTimeMs ?? null,
     xpEarned,
     coinsEarned,
     completedAt
@@ -178,7 +253,7 @@ function normalizeHistoryEntry(entry) {
 
   const completedAt = typeof entry.completedAt === 'string' ? entry.completedAt : new Date().toISOString();
   const reason = typeof entry.reason === 'string' ? entry.reason : 'completed';
-  const outcome = entry.outcome === 'defeat' || reason === 'forfeit' || reason === 'stopped' ? 'defeat' : 'victory';
+  const outcome = normalizeOutcome(entry.outcome || defaultOutcomeForResult({ reason }));
 
   return {
     id: typeof entry.id === 'string' ? entry.id : `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
@@ -189,10 +264,35 @@ function normalizeHistoryEntry(entry) {
     timeMs: typeof entry.timeMs === 'number' ? Math.max(0, entry.timeMs) : 0,
     reason,
     outcome,
+    duelId: typeof entry.duelId === 'string' ? entry.duelId : null,
+    duelRole: typeof entry.duelRole === 'string' ? entry.duelRole : null,
+    opponentName: typeof entry.opponentName === 'string' ? entry.opponentName : null,
+    opponentPushups: typeof entry.opponentPushups === 'number' ? Math.max(0, entry.opponentPushups) : null,
+    opponentTimeMs: typeof entry.opponentTimeMs === 'number' ? Math.max(0, entry.opponentTimeMs) : null,
     xpEarned: clampInteger(entry.xpEarned, 0, 999999, 0),
     coinsEarned: clampInteger(entry.coinsEarned, 0, 999999, 0),
     completedAt
   };
+}
+
+function defaultOutcomeForResult(result) {
+  if (result?.reason === 'forfeit' || result?.reason === 'stopped') {
+    return RESULT_OUTCOMES.defeat;
+  }
+
+  return RESULT_OUTCOMES.victory;
+}
+
+function normalizeOutcome(outcome) {
+  if (
+    outcome === RESULT_OUTCOMES.defeat ||
+    outcome === RESULT_OUTCOMES.pending ||
+    outcome === RESULT_OUTCOMES.draw
+  ) {
+    return outcome;
+  }
+
+  return RESULT_OUTCOMES.victory;
 }
 
 function normalizeCameraPermission(permission) {
