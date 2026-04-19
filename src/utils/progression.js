@@ -1,5 +1,3 @@
-const STORAGE_KEY = 'pushup-duel-progress-v1';
-
 export const CHALLENGE_MODES = {
   maxReps: 'max_reps',
   fixedGoal: 'fixed_goal'
@@ -7,29 +5,10 @@ export const CHALLENGE_MODES = {
 
 export const ONE_MINUTE_MS = 60_000;
 
-export function loadProgression() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    return normalizeProgression(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
-export function saveProgression(progression) {
-  const normalized = normalizeProgression(progression);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-  return normalized;
-}
-
 export function createProgression({ nickname, maxPushups }) {
   const now = new Date().toISOString();
 
-  return saveProgression({
+  return normalizeProgression({
     onboarded: true,
     profile: {
       nickname: sanitizeNickname(nickname),
@@ -95,7 +74,7 @@ export function applyChallengeResult(progression, result) {
     nextStats.bestFixedGoal = result.goal;
   }
 
-  return saveProgression({
+  return normalizeProgression({
     ...current,
     profile: {
       ...current.profile,
@@ -112,7 +91,7 @@ export function applyChallengeResult(progression, result) {
 export function updateProgressionSettings(progression, settings) {
   const current = normalizeProgression(progression);
 
-  return saveProgression({
+  return normalizeProgression({
     ...current,
     settings: {
       ...current.settings,
@@ -120,10 +99,6 @@ export function updateProgressionSettings(progression, settings) {
     },
     updatedAt: new Date().toISOString()
   });
-}
-
-export function deleteProgression() {
-  window.localStorage.removeItem(STORAGE_KEY);
 }
 
 export function makeChallenge({ mode, goal }) {

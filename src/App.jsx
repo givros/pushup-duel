@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
 import ProfileSetupScreen from './components/ProfileSetupScreen.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
@@ -11,11 +11,15 @@ import {
   CHALLENGE_MODES,
   applyChallengeResult,
   createProgression,
-  deleteProgression,
-  loadProgression,
   makeChallenge,
   updateProgressionSettings
 } from './utils/progression.js';
+import { isSupabaseConfigured } from './services/supabaseClient.js';
+import {
+  deleteRemoteProgression,
+  loadRemoteProgression,
+  saveRemoteProgression
+} from './services/progressionRepository.js';
 
 const screens = {
   welcome: 'welcome',
@@ -28,34 +32,93 @@ const screens = {
 };
 
 export default function App() {
-  const [progression, setProgression] = useState(() => loadProgression());
-  const [screen, setScreen] = useState(() => (loadProgression()?.onboarded ? screens.home : screens.welcome));
-  const [challenge, setChallenge] = useState(() => {
-    const saved = loadProgression();
-    return makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: saved?.profile?.maxPushups || 20 });
-  });
+  const [bootStatus, setBootStatus] = useState('loading');
+  const [syncError, setSyncError] = useState('');
+  const [progression, setProgression] = useState(null);
+  const [screen, setScreen] = useState(screens.welcome);
+  const [challenge, setChallenge] = useState(() => makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
   const [result, setResult] = useState(null);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [challengeKey, setChallengeKey] = useState(0);
 
-  const updateCameraPermission = useCallback((cameraPermission) => {
-    setProgression((current) => {
-      if (!current?.onboarded) {
-        return current;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootApp() {
+      setSyncError('');
+
+      if (!isSupabaseConfigured()) {
+        setBootStatus('missing-config');
+        return;
       }
 
-      return updateProgressionSettings(current, {
-        cameraPermission,
-        cameraCheckedAt: new Date().toISOString()
-      });
-    });
+      try {
+        const savedProgression = await loadRemoteProgression();
+
+        if (cancelled) {
+          return;
+        }
+
+        setProgression(savedProgression);
+        setChallenge(makeChallenge({
+          mode: CHALLENGE_MODES.maxReps,
+          goal: savedProgression?.profile?.maxPushups || 20
+        }));
+        setScreen(savedProgression?.onboarded ? screens.home : screens.welcome);
+        setBootStatus('ready');
+      } catch (error) {
+        if (!cancelled) {
+          setSyncError(getSyncErrorMessage(error));
+          setBootStatus('error');
+        }
+      }
+    }
+
+    bootApp();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  function completeSetup(profile) {
-    const nextProgression = createProgression(profile);
+  const persistProgression = useCallback(async (nextProgression) => {
+    setSyncError('');
     setProgression(nextProgression);
-    setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: nextProgression.profile.maxPushups }));
-    setScreen(screens.home);
+
+    try {
+      const savedProgression = await saveRemoteProgression(nextProgression);
+      setProgression(savedProgression);
+      return savedProgression;
+    } catch (error) {
+      setSyncError(getSyncErrorMessage(error));
+      throw error;
+    }
+  }, []);
+
+  const updateCameraPermission = useCallback((cameraPermission) => {
+    if (!progression?.onboarded) {
+      return;
+    }
+
+    const nextProgression = updateProgressionSettings(progression, {
+      cameraPermission,
+      cameraCheckedAt: new Date().toISOString()
+    });
+
+    setProgression(nextProgression);
+    persistProgression(nextProgression).catch(() => undefined);
+  }, [persistProgression, progression]);
+
+  async function completeSetup(profile) {
+    const nextProgression = createProgression(profile);
+
+    try {
+      const savedProgression = await persistProgression(nextProgression);
+      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: savedProgression.profile.maxPushups }));
+      setScreen(screens.home);
+    } catch {
+      setScreen(screens.setup);
+    }
   }
 
   function startChallenge(nextChallenge) {
@@ -79,7 +142,9 @@ export default function App() {
     };
     setResult(resultWithMode);
     if (progression?.onboarded) {
-      setProgression(applyChallengeResult(progression, resultWithMode));
+      const nextProgression = applyChallengeResult(progression, resultWithMode);
+      setProgression(nextProgression);
+      persistProgression(nextProgression).catch(() => undefined);
     }
     setScreen(screens.result);
   }
@@ -93,16 +158,64 @@ export default function App() {
     setScreen(screens.settings);
   }
 
-  function handleDeleteAccount() {
-    deleteProgression();
-    setProgression(null);
-    setResult(null);
-    setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
-    setScreen(screens.welcome);
+  async function handleDeleteAccount() {
+    try {
+      await deleteRemoteProgression();
+      setProgression(null);
+      setResult(null);
+      setSelectedOpponent(null);
+      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
+      setScreen(screens.welcome);
+    } catch (error) {
+      setSyncError(getSyncErrorMessage(error));
+    }
+  }
+
+  if (bootStatus === 'loading') {
+    return (
+      <div className="app-shell">
+        <SystemScreen
+          title="Connexion Supabase"
+          message="Synchronisation du profil et de la progression..."
+        />
+      </div>
+    );
+  }
+
+  if (bootStatus === 'missing-config') {
+    return (
+      <div className="app-shell">
+        <SystemScreen
+          title="Configuration Supabase requise"
+          message="Ajoute VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans tes variables d'environnement, puis redéploie l'application."
+        />
+      </div>
+    );
+  }
+
+  if (bootStatus === 'error') {
+    return (
+      <div className="app-shell">
+        <SystemScreen
+          title="Synchronisation impossible"
+          message={syncError || 'Impossible de contacter Supabase pour le moment.'}
+        >
+          <button className="primary-button" type="button" onClick={() => window.location.reload()}>
+            Réessayer
+          </button>
+        </SystemScreen>
+      </div>
+    );
   }
 
   return (
     <div className="app-shell">
+      {syncError && (
+        <div className="sync-error-banner" role="alert">
+          {syncError}
+        </div>
+      )}
+
       {screen === screens.welcome && <WelcomeScreen onStart={() => setScreen(screens.setup)} />}
 
       {screen === screens.setup && <ProfileSetupScreen onComplete={completeSetup} />}
@@ -157,4 +270,21 @@ export default function App() {
       {progression?.onboarded && screen !== screens.result && <BottomNav />}
     </div>
   );
+}
+
+function SystemScreen({ title, message, children }) {
+  return (
+    <main className="screen system-screen">
+      <section className="system-card">
+        <div className="system-loader" aria-hidden="true" />
+        <h1>{title}</h1>
+        <p>{message}</p>
+        {children}
+      </section>
+    </main>
+  );
+}
+
+function getSyncErrorMessage(error) {
+  return error?.message || 'Synchronisation Supabase impossible.';
 }

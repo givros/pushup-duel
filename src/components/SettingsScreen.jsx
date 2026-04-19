@@ -50,7 +50,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
           <span />
         </div>
         <div>
-          <span className="settings-kicker">Compte local</span>
+          <span className="settings-kicker">Compte Supabase</span>
           <h2>{profile.nickname}</h2>
           <p>Niveau {profile.level} • {profile.maxPushups} pompes max déclarées</p>
         </div>
@@ -104,7 +104,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
         <div className="settings-section-title">
           <h2>Supprimer le compte</h2>
         </div>
-        <p>Cette action efface ton profil, tes statistiques, ton historique et tes réglages sur cet appareil.</p>
+        <p>Cette action efface ton profil, tes statistiques, ton historique et tes réglages synchronisés.</p>
 
         {!confirmDelete ? (
           <button className="danger-button" type="button" onClick={() => setConfirmDelete(true)}>

@@ -35,7 +35,7 @@ export default function WelcomeScreen({ onStart }) {
           </li>
           <li>
             <Icon name="trending_up" className="filled" />
-            <strong>Progression locale</strong>
+            <strong>Progression synchronisée</strong>
           </li>
         </ul>
 

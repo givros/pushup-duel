@@ -1,6 +1,6 @@
 # Push Challenge
 
-MVP React mobile-first de challenge de pompes, sans backend, avec caméra, MediaPipe Pose Landmarker Web, PWA et déploiement GitHub Pages sur :
+MVP React mobile-first de challenge de pompes, avec caméra, MediaPipe Pose Landmarker Web, Supabase pour la progression, PWA et déploiement GitHub Pages sur :
 
 https://givros.github.io/pushup-duel/
 
@@ -31,8 +31,32 @@ Les dependances principales sont :
 
 ```bash
 npm install @mediapipe/tasks-vision
+npm install @supabase/supabase-js
 npm install -D vite-plugin-pwa
 ```
+
+## Configuration Supabase
+
+L'application utilise Supabase Auth en connexion anonyme, puis stocke la progression dans la table `player_progressions`. La session anonyme permet de garder un profil par navigateur sans écran de login.
+
+Dans Supabase :
+
+1. Créer un projet Supabase.
+2. Activer les connexions anonymes dans `Authentication -> Sign In / Providers -> Anonymous sign-ins`.
+3. Ouvrir le SQL Editor et exécuter le fichier `supabase/schema.sql`.
+4. Récupérer l'URL du projet et la clé anon/publishable depuis `Project Settings -> API`.
+
+En local, créer un fichier `.env` à partir de `.env.example` :
+
+```bash
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+Pour GitHub Pages, ajouter ces secrets dans `Settings -> Secrets and variables -> Actions` :
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
 ## Commandes
 
@@ -54,7 +78,7 @@ La configuration critique est dans `vite.config.js` :
 - PWA `scope: '/pushup-duel/'`
 - icones dans `public/icons/`
 
-Le workflow `.github/workflows/deploy.yml` installe Node, lance `npm install`, construit avec `npm run build`, puis publie `/dist`.
+Le workflow `.github/workflows/deploy.yml` installe Node, lance `npm install`, injecte les variables Supabase depuis les secrets GitHub, construit avec `npm run build`, puis publie `/dist`.
 
 Dans GitHub :
 
