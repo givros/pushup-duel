@@ -4,9 +4,10 @@ import { CHALLENGE_MODES, challengeTitle } from '../utils/progression.js';
 
 export default function ResultScreen({ result, progression, onRestart, onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
+  const isDefeat = result.reason === 'forfeit' || result.reason === 'stopped';
   const lastResult = progression?.stats?.lastResult;
-  const xpEarned = lastResult?.xpEarned ?? Math.max(5, result.pushups * 2);
-  const coinsEarned = lastResult?.coinsEarned ?? Math.max(2, Math.floor(result.pushups / 2));
+  const xpEarned = isDefeat ? 0 : (lastResult?.xpEarned ?? Math.max(5, result.pushups * 2));
+  const coinsEarned = isDefeat ? 0 : (lastResult?.coinsEarned ?? Math.max(2, Math.floor(result.pushups / 2)));
   const bestLabel = isMaxMode
     ? `${progression?.stats?.bestOneMinute || result.pushups} pompes`
     : formatBestTime(progression?.stats?.bestFixedTimeMs);
@@ -15,32 +16,32 @@ export default function ResultScreen({ result, progression, onRestart, onHome })
     <main className="screen result-screen">
       <TopBar compact progression={progression} />
 
-      <section className="victory-hero compact-result">
-        <p>Défi terminé</p>
-        <h1>{isMaxMode ? 'Score' : 'Chrono'}</h1>
+      <section className={`victory-hero compact-result ${isDefeat ? 'defeat-result' : ''}`}>
+        <p>{isDefeat ? 'Défi annulé' : 'Défi terminé'}</p>
+        <h1>{isDefeat ? 'Défaite' : isMaxMode ? 'Score' : 'Chrono'}</h1>
       </section>
 
-      <section className="result-focus">
-        <span>{challengeTitle(result)}</span>
+      <section className={`result-focus ${isDefeat ? 'defeat-result' : ''}`}>
+        <span>{isDefeat ? 'Défaite par abandon' : challengeTitle(result)}</span>
         <strong>
-          {isMaxMode ? result.pushups : formatSeconds(result.timeMs)}
-          <small>{isMaxMode ? 'pompes' : 's'}</small>
+          {isDefeat || isMaxMode ? result.pushups : formatSeconds(result.timeMs)}
+          <small>{isDefeat || isMaxMode ? 'pompes' : 's'}</small>
         </strong>
       </section>
 
       <section className="result-summary">
         <article>
-          <span>Pompes</span>
+          <span>{isDefeat ? 'Pompes validées' : 'Pompes'}</span>
           <strong>{result.pushups}</strong>
         </article>
         <article>
-          <span>{isMaxMode ? 'Record 1 min' : 'Meilleur chrono'}</span>
-          <strong>{bestLabel}</strong>
+          <span>{isDefeat ? 'Issue' : isMaxMode ? 'Record 1 min' : 'Meilleur chrono'}</span>
+          <strong>{isDefeat ? 'Défaite' : bestLabel}</strong>
         </article>
       </section>
 
       <section className="reward-card compact">
-        <h2>Progression enregistrée</h2>
+        <h2>{isDefeat ? 'Défaite enregistrée' : 'Progression enregistrée'}</h2>
         <div className="reward-grid">
           <div>
             <Icon name="star" className="filled" />

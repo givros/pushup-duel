@@ -103,7 +103,7 @@ export default function CameraChallenge({ challenge, onComplete, onCancel }) {
   );
 
   const handleStop = useCallback(() => {
-    finishChallenge('stopped', pushupsRef.current);
+    finishChallenge('forfeit', pushupsRef.current);
   }, [finishChallenge]);
 
   const beginCountdown = useCallback(() => {
@@ -324,6 +324,7 @@ export default function CameraChallenge({ challenge, onComplete, onCancel }) {
           ready={isReady}
           count={phase === 'arming' ? Math.ceil(readyHoldRemainingMs / 1000) : countdown}
           label={getOverlayLabel({ isReady, phase, setupLabel, status: detection.status })}
+          onCancel={handleStop}
         />
       )}
 
@@ -352,7 +353,7 @@ function getOverlayLabel({ isReady, phase, setupLabel, status }) {
   }
 
   if (phase === 'arming') {
-    return status === 'Prêt' ? 'Reste prêt' : 'Place-toi en position haute';
+    return status === 'Prêt' ? 'Reste prêt' : 'Place-toi en position de pompe';
   }
 
   if (phase === 'countdown') {

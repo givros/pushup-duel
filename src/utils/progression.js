@@ -40,6 +40,7 @@ export function createProgression({ nickname, maxPushups }) {
     },
     stats: {
       sessions: 0,
+      defeats: 0,
       totalPushups: 0,
       bestOneMinute: 0,
       bestFixedTimeMs: null,
@@ -54,13 +55,15 @@ export function createProgression({ nickname, maxPushups }) {
 export function applyChallengeResult(progression, result) {
   const current = normalizeProgression(progression);
   const isCompleted = result.reason === 'completed' || result.reason === 'timeup';
-  const xpEarned = Math.max(5, result.pushups * 2 + (isCompleted ? 10 : 0));
-  const coinsEarned = Math.max(2, Math.floor(result.pushups / 2) + (isCompleted ? 5 : 0));
+  const isDefeat = result.reason === 'forfeit' || result.reason === 'stopped';
+  const xpEarned = isDefeat ? 0 : Math.max(5, result.pushups * 2 + (isCompleted ? 10 : 0));
+  const coinsEarned = isDefeat ? 0 : Math.max(2, Math.floor(result.pushups / 2) + (isCompleted ? 5 : 0));
   const nextXp = current.profile.xp + xpEarned;
   const nextLevel = 1 + Math.floor(nextXp / 500);
   const nextStats = {
     ...current.stats,
     sessions: current.stats.sessions + 1,
+    defeats: current.stats.defeats + (isDefeat ? 1 : 0),
     totalPushups: current.stats.totalPushups + result.pushups,
     lastResult: {
       ...result,
@@ -70,7 +73,7 @@ export function applyChallengeResult(progression, result) {
     }
   };
 
-  if (result.mode === CHALLENGE_MODES.maxReps) {
+  if (result.mode === CHALLENGE_MODES.maxReps && result.reason === 'timeup') {
     nextStats.bestOneMinute = Math.max(current.stats.bestOneMinute, result.pushups);
   }
 
@@ -90,7 +93,7 @@ export function applyChallengeResult(progression, result) {
       xp: nextXp,
       coins: current.profile.coins + coinsEarned,
       level: nextLevel,
-      maxPushups: Math.max(current.profile.maxPushups, result.pushups)
+      maxPushups: isDefeat ? current.profile.maxPushups : Math.max(current.profile.maxPushups, result.pushups)
     },
     stats: nextStats,
     updatedAt: new Date().toISOString()
@@ -131,6 +134,7 @@ export function normalizeProgression(progression) {
     },
     stats: {
       sessions: clampInteger(stats.sessions, 0, 999999, 0),
+      defeats: clampInteger(stats.defeats, 0, 999999, 0),
       totalPushups: clampInteger(stats.totalPushups, 0, 999999, 0),
       bestOneMinute: clampInteger(stats.bestOneMinute, 0, 999999, 0),
       bestFixedTimeMs: typeof stats.bestFixedTimeMs === 'number' ? Math.max(0, stats.bestFixedTimeMs) : null,

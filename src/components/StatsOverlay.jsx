@@ -30,8 +30,9 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
           </div>
         </div>
 
-        <button className="pause-button" type="button" onClick={onStop} aria-label="Stopper le défi">
-          <Icon name="pause" />
+        <button className="cancel-challenge-button" type="button" onClick={onStop} aria-label="Annuler le défi">
+          <Icon name="close" />
+          <span>Annuler</span>
         </button>
       </header>
 
