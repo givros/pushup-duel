@@ -175,8 +175,8 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Connexion Supabase"
-          message="Synchronisation du profil et de la progression..."
+          title="Chargement"
+          message="Préparation de ton profil..."
         />
       </div>
     );
@@ -186,8 +186,8 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Configuration Supabase requise"
-          message="Ajoute VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans tes variables d'environnement, puis redéploie l'application."
+          title="Application indisponible"
+          message="La sauvegarde des profils n'est pas encore configurée. Réessaie dans quelques instants."
         />
       </div>
     );
@@ -197,8 +197,8 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Synchronisation impossible"
-          message={syncError || 'Impossible de contacter Supabase pour le moment.'}
+          title="Connexion impossible"
+          message={syncError || 'Impossible de charger ton profil pour le moment.'}
         >
           <button className="primary-button" type="button" onClick={() => window.location.reload()}>
             Réessayer
@@ -286,5 +286,5 @@ function SystemScreen({ title, message, children }) {
 }
 
 function getSyncErrorMessage(error) {
-  return error?.message || 'Synchronisation Supabase impossible.';
+  return error?.message || 'Impossible de sauvegarder ton profil.';
 }

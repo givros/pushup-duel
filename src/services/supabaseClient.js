@@ -11,7 +11,7 @@ export function isSupabaseConfigured() {
 
 export function getSupabaseClient() {
   if (!isSupabaseConfigured()) {
-    throw new Error('Configuration Supabase manquante.');
+    throw new Error('Configuration de sauvegarde manquante.');
   }
 
   if (!client) {

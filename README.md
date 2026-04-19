@@ -1,6 +1,6 @@
 # Push Challenge
 
-MVP React mobile-first de challenge de pompes, avec caméra, MediaPipe Pose Landmarker Web, Supabase pour la progression, PWA et déploiement GitHub Pages sur :
+MVP React mobile-first de challenge de pompes, avec caméra, MediaPipe Pose Landmarker Web, stockage Supabase, PWA et déploiement GitHub Pages sur :
 
 https://givros.github.io/pushup-duel/
 
@@ -37,7 +37,14 @@ npm install -D vite-plugin-pwa
 
 ## Configuration Supabase
 
-L'application utilise Supabase Auth en connexion anonyme, puis stocke la progression dans la table `player_progressions`. La session anonyme permet de garder un profil par navigateur sans écran de login.
+L'application utilise Supabase Auth en connexion anonyme, puis stocke les données dans des tables séparées :
+
+- `player_accounts` : compte joueur, pseudo, niveau, XP, pièces ;
+- `player_settings` : réglages utilisateur, dont l'autorisation caméra ;
+- `player_stats` : statistiques agrégées et dernier résultat ;
+- `player_history` : historique des défis.
+
+La session anonyme permet de garder un profil par navigateur sans écran de login. Le compte applicatif est créé uniquement lorsque l'utilisateur valide l'onboarding.
 
 Dans Supabase :
 

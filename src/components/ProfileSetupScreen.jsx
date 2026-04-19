@@ -26,9 +26,9 @@ export default function ProfileSetupScreen({ onComplete }) {
   return (
     <main className="screen onboarding-screen">
       <form className="profile-form" onSubmit={handleSubmit} noValidate>
-        <span className="onboarding-kicker">Création du profil</span>
+        <span className="onboarding-kicker">Création du compte</span>
         <h1>Présente-toi</h1>
-        <p>Ton pseudo et ton niveau servent à suivre tes records dans ton profil.</p>
+        <p>Choisis ton pseudo et ton niveau actuel pour créer ton compte joueur.</p>
 
         <label htmlFor="nickname">Pseudo</label>
         <input

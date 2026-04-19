@@ -50,7 +50,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
           <span />
         </div>
         <div>
-          <span className="settings-kicker">Compte Supabase</span>
+          <span className="settings-kicker">Compte joueur</span>
           <h2>{profile.nickname}</h2>
           <p>Niveau {profile.level} • {profile.maxPushups} pompes max déclarées</p>
         </div>
