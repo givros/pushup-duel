@@ -93,13 +93,13 @@ Dans GitHub :
 2. Choisir `GitHub Actions` comme source.
 3. Chaque push sur `main` déploie automatiquement l'application.
 
-## Test sur iPhone
+## Test sur mobile
 
-La caméra exige un contexte sécurisé. Pour tester sur iPhone, utiliser l'URL HTTPS GitHub Pages après déploiement :
+La caméra exige un contexte sécurisé. Pour tester sur mobile, utiliser l'URL HTTPS GitHub Pages après déploiement :
 
 https://givros.github.io/pushup-duel/
 
-En local, `localhost` fonctionne sur la machine de développement, mais un iPhone qui accède à une IP locale en HTTP peut refuser la caméra.
+En local, `localhost` fonctionne sur la machine de développement, mais un téléphone qui accède à une IP locale en HTTP peut refuser la caméra.
 
 ## Detection des pompes
 

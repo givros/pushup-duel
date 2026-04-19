@@ -20,7 +20,7 @@ export default function WelcomeScreen({ onStart }) {
             Push-up <em>Défi</em>
           </h1>
           <p>
-            Lance un défi, pose ton iPhone, et laisse la caméra compter tes pompes pendant que le chrono tourne.
+            Lance un défi, pose ton téléphone, et laisse la caméra compter tes pompes pendant que le chrono tourne.
           </p>
         </div>
 
