@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
 import ProfileSetupScreen from './components/ProfileSetupScreen.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
@@ -40,6 +40,11 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [challengeKey, setChallengeKey] = useState(0);
+  const progressionRef = useRef(null);
+
+  useEffect(() => {
+    progressionRef.current = progression;
+  }, [progression]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,18 +101,21 @@ export default function App() {
   }, []);
 
   const updateCameraPermission = useCallback((cameraPermission) => {
-    if (!progression?.onboarded) {
+    const currentProgression = progressionRef.current;
+
+    if (!currentProgression?.onboarded) {
       return;
     }
 
-    const nextProgression = updateProgressionSettings(progression, {
+    const nextProgression = updateProgressionSettings(currentProgression, {
       cameraPermission,
       cameraCheckedAt: new Date().toISOString()
     });
 
+    progressionRef.current = nextProgression;
     setProgression(nextProgression);
     persistProgression(nextProgression).catch(() => undefined);
-  }, [persistProgression, progression]);
+  }, [persistProgression]);
 
   async function completeSetup(profile) {
     const nextProgression = createProgression(profile);
