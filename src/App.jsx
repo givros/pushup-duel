@@ -44,6 +44,8 @@ const screens = {
   settings: 'settings'
 };
 
+const HOME_REFRESH_INTERVAL_MS = 7000;
+
 export default function App() {
   const [bootStatus, setBootStatus] = useState('loading');
   const [syncError, setSyncError] = useState('');
@@ -165,10 +167,39 @@ export default function App() {
   }, [syncCompletedDuelOutcomes]);
 
   useEffect(() => {
-    if (bootStatus === 'ready' && progression?.onboarded) {
-      refreshIncomingChallenges();
+    if (bootStatus !== 'ready' || !progression?.onboarded || screen !== screens.home) {
+      return undefined;
     }
-  }, [bootStatus, progression?.onboarded, refreshIncomingChallenges]);
+
+    let cancelled = false;
+    let refreshing = false;
+
+    async function refreshHomeData() {
+      if (cancelled || refreshing || document.visibilityState === 'hidden') {
+        return;
+      }
+
+      refreshing = true;
+
+      try {
+        await refreshIncomingChallenges();
+      } finally {
+        refreshing = false;
+      }
+    }
+
+    refreshHomeData();
+    const intervalId = window.setInterval(refreshHomeData, HOME_REFRESH_INTERVAL_MS);
+    window.addEventListener('focus', refreshHomeData);
+    document.addEventListener('visibilitychange', refreshHomeData);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshHomeData);
+      document.removeEventListener('visibilitychange', refreshHomeData);
+    };
+  }, [bootStatus, progression?.onboarded, refreshIncomingChallenges, screen]);
 
   useEffect(() => {
     if (
