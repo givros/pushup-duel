@@ -41,6 +41,12 @@ const icons = {
       <path d="M12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
     </>
   ),
+  person: (
+    <>
+      <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
+      <path d="M4 21v-1.4c0-3.2 5.3-5 8-5s8 1.8 8 5V21H4Z" />
+    </>
+  ),
   play_arrow: <path d="M8 5v14l11-7L8 5Z" />,
   radio_button_checked: (
     <>

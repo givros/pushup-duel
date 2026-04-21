@@ -1,10 +1,11 @@
 import Icon from './Icon.jsx';
 
 const navItems = [
-  { id: 'home', icon: 'sports_esports', label: 'Arène' },
-  { id: 'challenges', icon: 'flag', label: 'Défis' },
-  { id: 'settings', icon: 'leaderboard', label: 'Suivi' },
-  { id: 'shop', icon: 'shopping_cart', label: 'Boutique', disabled: true }
+  { id: 'shop', icon: 'shopping_cart', label: 'Boutique', disabled: true },
+  { id: 'stats', icon: 'leaderboard', label: 'Stats' },
+  { id: 'home', icon: 'sports_esports', label: 'Duel', featured: true },
+  { id: 'history', icon: 'flag', label: 'Historique' },
+  { id: 'profile', icon: 'person', label: 'Profil' }
 ];
 
 export default function BottomNav({ active = 'home', onNavigate }) {
@@ -12,7 +13,7 @@ export default function BottomNav({ active = 'home', onNavigate }) {
     <nav className="bottom-nav" aria-label="Navigation principale">
       {navItems.map((item) => (
         <button
-          className={`nav-item ${active === item.id ? 'active' : ''}`}
+          className={`nav-item ${item.featured ? 'featured' : ''} ${active === item.id ? 'active' : ''}`}
           type="button"
           key={item.id}
           onClick={() => onNavigate?.(item.id)}

@@ -5,6 +5,7 @@ import StarterChallengePrompt from './components/StarterChallengePrompt.jsx';
 import CameraGuideScreen from './components/CameraGuideScreen.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import ChallengesScreen from './components/ChallengesScreen.jsx';
+import StatsScreen from './components/StatsScreen.jsx';
 import MatchmakingScreen from './components/MatchmakingScreen.jsx';
 import CameraChallenge from './components/CameraChallenge.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
@@ -47,6 +48,7 @@ const screens = {
   cameraGuide: 'cameraGuide',
   home: 'home',
   challenges: 'challenges',
+  stats: 'stats',
   matchmaking: 'matchmaking',
   challenge: 'challenge',
   result: 'result',
@@ -523,13 +525,18 @@ export default function App() {
   }
 
   function handleNavNavigate(destination) {
-    if (destination === 'challenges') {
+    if (destination === 'history') {
       setScreen(screens.challenges);
       refreshIncomingChallenges();
       return;
     }
 
-    if (destination === 'settings') {
+    if (destination === 'stats') {
+      setScreen(screens.stats);
+      return;
+    }
+
+    if (destination === 'profile') {
       openSettings();
       return;
     }
@@ -644,6 +651,13 @@ export default function App() {
         />
       )}
 
+      {screen === screens.stats && progression?.onboarded && (
+        <StatsScreen
+          progression={progression}
+          onOpenSettings={openSettings}
+        />
+      )}
+
       {screen === screens.matchmaking && (
         <MatchmakingScreen
           challenge={challenge}
@@ -701,11 +715,15 @@ function getInitialScreen(progression) {
 
 function getActiveNav(screen) {
   if (screen === screens.challenges) {
-    return 'challenges';
+    return 'history';
+  }
+
+  if (screen === screens.stats) {
+    return 'stats';
   }
 
   if (screen === screens.settings) {
-    return 'settings';
+    return 'profile';
   }
 
   return 'home';

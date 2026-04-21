@@ -35,7 +35,7 @@ export default function ChallengesScreen({
       <header className="challenges-header">
         <div>
           <span>Centre de duels</span>
-          <h1>Défis</h1>
+          <h1>Historique</h1>
         </div>
         <button className="secondary-button" type="button" onClick={onRefreshChallenges}>
           <Icon name="sync" className="filled" />

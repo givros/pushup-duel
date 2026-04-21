@@ -41,7 +41,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
         </button>
         <div>
           <span>Profil</span>
-          <h1>Réglages</h1>
+          <h1>Profil</h1>
         </div>
       </header>
 
