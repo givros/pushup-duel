@@ -40,6 +40,7 @@ import {
   listOutgoingChallenges,
   listOpponentCandidates
 } from './services/duelChallengeService.js';
+import { usePortraitOrientation } from './hooks/usePortraitOrientation.js';
 
 const screens = {
   welcome: 'welcome',
@@ -66,6 +67,8 @@ const DEFAULT_PUSHUP_GOAL = 15;
 const STARTER_CHALLENGE_GOAL = 15;
 
 export default function App() {
+  usePortraitOrientation();
+
   const [bootStatus, setBootStatus] = useState('loading');
   const [syncError, setSyncError] = useState('');
   const [progression, setProgression] = useState(null);

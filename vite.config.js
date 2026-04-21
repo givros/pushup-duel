@@ -18,7 +18,7 @@ export default defineConfig({
         start_url: '/pushup-duel/',
         scope: '/pushup-duel/',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'portrait-primary',
         theme_color: '#0f766e',
         background_color: '#071014',
         icons: [

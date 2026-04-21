@@ -43,6 +43,51 @@ body {
   background: var(--surface);
 }
 
+@media (orientation: landscape) and (max-height: 560px) {
+  body::before {
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 50% 40%, rgba(0, 229, 255, 0.18), transparent 34%),
+      linear-gradient(180deg, #060e20 0%, #0b1326 100%);
+    content: "Mode portrait requis";
+    font-size: clamp(1.8rem, 8vw, 3.6rem);
+    font-style: italic;
+    font-weight: 950;
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  body::after {
+    position: fixed;
+    z-index: 10001;
+    left: 50%;
+    bottom: max(28px, env(safe-area-inset-bottom, 0px));
+    width: min(82vw, 380px);
+    transform: translateX(-50%);
+    color: rgba(218, 226, 253, 0.78);
+    content: "Tourne ton téléphone pour continuer le duel.";
+    font-size: 0.9rem;
+    font-weight: 720;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  #root {
+    max-height: 100dvh;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
 button,
 input {
   font: inherit;

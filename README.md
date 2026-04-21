@@ -92,6 +92,7 @@ La configuration critique est dans `vite.config.js` :
 - `base: '/pushup-duel/'`
 - PWA `start_url: '/pushup-duel/'`
 - PWA `scope: '/pushup-duel/'`
+- PWA `orientation: 'portrait-primary'`
 - icones dans `public/icons/`
 
 Le workflow `.github/workflows/deploy.yml` installe Node, lance `npm install`, injecte les variables Supabase depuis les secrets GitHub, construit avec `npm run build`, puis publie `/dist`.
