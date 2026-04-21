@@ -1,5 +1,11 @@
 import { getSupabaseClient } from './supabaseClient.js';
 import { challengeTitle, makeChallenge } from '../utils/progression.js';
+import {
+  EXPIRED_DUEL_REASON,
+  getDuelExpiresAt,
+  getDuelRemainingMs,
+  isDuelCreatedAtExpired
+} from '../utils/duelExpiration.js';
 
 const CHALLENGES_TABLE = 'duel_challenges';
 
@@ -53,6 +59,70 @@ export async function listIncomingChallenges() {
   return (data || []).map((row) => challengeFromRow(row, session.user.id));
 }
 
+export async function listOutgoingChallenges() {
+  const supabase = getSupabaseClient();
+  const session = await getCurrentSession(supabase);
+
+  if (!session) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from(CHALLENGES_TABLE)
+    .select('*')
+    .eq('challenger_id', session.user.id)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (isMissingChallengeTable(error)) {
+    return [];
+  }
+
+  if (error) {
+    throw makeDuelError('Impossible de charger tes défis envoyés.', error);
+  }
+
+  return (data || []).map((row) => challengeFromRow(row, session.user.id));
+}
+
+export async function expireStaleDuelChallenges() {
+  const supabase = getSupabaseClient();
+  const session = await getCurrentSession(supabase);
+
+  if (!session) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from(CHALLENGES_TABLE)
+    .select('*')
+    .or(`challenger_id.eq.${session.user.id},receiver_id.eq.${session.user.id}`)
+    .eq('status', 'pending')
+    .limit(30);
+
+  if (isMissingChallengeTable(error)) {
+    return [];
+  }
+
+  if (error) {
+    throw makeDuelError('Impossible de vérifier les défis expirés.', error);
+  }
+
+  const expiredRows = (data || []).filter((row) => isDuelCreatedAtExpired(row.created_at));
+  const resolvedDuels = [];
+
+  for (const row of expiredRows) {
+    const resolved = await expireDuelRow(supabase, row, session.user.id);
+
+    if (resolved) {
+      resolvedDuels.push(resolved);
+    }
+  }
+
+  return resolvedDuels;
+}
+
 export async function listCompletedDuelChallenges() {
   const supabase = getSupabaseClient();
   const session = await getCurrentSession(supabase);
@@ -90,6 +160,12 @@ export async function getDuelChallenge(duelId) {
 
   if (!session) {
     return null;
+  }
+
+  const expiredDuel = await expireDuelByIdIfNeeded(supabase, duelId, session.user.id);
+
+  if (expiredDuel) {
+    return expiredDuel;
   }
 
   const { data, error } = await supabase
@@ -163,6 +239,12 @@ export async function completeIncomingChallenge({ duel, result, progression }) {
     return null;
   }
 
+  const expiredDuel = await expireDuelByIdIfNeeded(supabase, duel.id, session.user.id);
+
+  if (expiredDuel) {
+    return expiredDuel;
+  }
+
   const { data, error } = await supabase
     .from(CHALLENGES_TABLE)
     .update({
@@ -214,6 +296,55 @@ export async function declineIncomingChallenge(duelId) {
   }
 }
 
+async function expireDuelByIdIfNeeded(supabase, duelId, userId) {
+  const { data, error } = await supabase
+    .from(CHALLENGES_TABLE)
+    .select('*')
+    .eq('id', duelId)
+    .maybeSingle();
+
+  if (isMissingChallengeTable(error)) {
+    return null;
+  }
+
+  if (error) {
+    throw makeDuelError('Impossible de vérifier ce défi.', error);
+  }
+
+  if (!data || data.status !== 'pending' || !isDuelCreatedAtExpired(data.created_at)) {
+    return null;
+  }
+
+  return expireDuelRow(supabase, data, userId);
+}
+
+async function expireDuelRow(supabase, row, userId) {
+  const { data, error } = await supabase
+    .from(CHALLENGES_TABLE)
+    .update({
+      receiver_pushups: 0,
+      receiver_time_ms: row.duration_ms || 0,
+      receiver_reason: EXPIRED_DUEL_REASON,
+      receiver_completed_at: new Date().toISOString(),
+      receiver_snapshot: row.receiver_snapshot || {},
+      status: 'completed'
+    })
+    .eq('id', row.id)
+    .eq('status', 'pending')
+    .select('*')
+    .maybeSingle();
+
+  if (isMissingChallengeTable(error)) {
+    return null;
+  }
+
+  if (error) {
+    throw makeDuelError('Impossible de clore un défi expiré.', error);
+  }
+
+  return data ? challengeFromRow(data, userId) : null;
+}
+
 async function getCurrentSession(supabase) {
   const { data, error } = await supabase.auth.getSession();
 
@@ -235,6 +366,7 @@ function challengeFromRow(row, userId) {
     ? makeResultFromRow(row, 'receiver')
     : makeResultFromRow(row, 'challenger');
   const opponentName = opponentSnapshot.nickname || 'Adversaire';
+  const expiresAt = getDuelExpiresAt(row.created_at);
 
   return {
     id: row.id,
@@ -242,6 +374,8 @@ function challengeFromRow(row, userId) {
     role,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    expiresAt,
+    remainingMs: getDuelRemainingMs(expiresAt),
     challenge,
     challengerResult: makeResultFromRow(row, 'challenger'),
     receiverResult: makeResultFromRow(row, 'receiver'),

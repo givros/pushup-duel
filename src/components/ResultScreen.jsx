@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { CHALLENGE_MODES, RESULT_OUTCOMES, challengeTitle } from '../utils/progression.js';
+import { formatDuelRemainingTime, getDuelRemainingMs } from '../utils/duelExpiration.js';
 
 export default function ResultScreen({ result, opponent, flow = 'outgoing', onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
@@ -9,6 +11,18 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
   const isPending = outcome === RESULT_OUTCOMES.pending;
   const isDefeat = outcome === RESULT_OUTCOMES.defeat;
   const hasOpponentScore = typeof result.opponentPushups === 'number';
+  const [now, setNow] = useState(Date.now());
+  const remainingMs = isPending && result.duelExpiresAt ? getDuelRemainingMs(result.duelExpiresAt, now) : 0;
+
+  useEffect(() => {
+    if (!isPending || !result.duelExpiresAt) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isPending, result.duelExpiresAt]);
 
   return (
     <main className={`screen result-screen async-result-screen ${isPending ? 'pending-duel-result' : ''}`}>
@@ -52,6 +66,12 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
             <p>
               Score adversaire : {result.opponentPushups} pompes
               {typeof result.opponentTimeMs === 'number' ? ` en ${formatSeconds(result.opponentTimeMs)}s` : ''}
+            </p>
+          ) : isPending && result.duelExpiresAt ? (
+            <p className="result-countdown">
+              {remainingMs > 0
+                ? `Victoire automatique si aucune réponse dans ${formatDuelRemainingTime(remainingMs)}.`
+                : 'Temps écoulé, résolution du duel en cours.'}
             </p>
           ) : (
             opponent && <p>{opponent.stat} • {opponent.rank}</p>

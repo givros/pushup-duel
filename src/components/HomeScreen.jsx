@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TopBar from './TopBar.jsx';
 import Icon from './Icon.jsx';
 import HistoryList from './HistoryList.jsx';
 import { CHALLENGE_MODES, challengeTitle, makeChallenge } from '../utils/progression.js';
+import { formatDuelRemainingTime, getDuelRemainingMs } from '../utils/duelExpiration.js';
 
 export default function HomeScreen({
   progression,
   defaultGoal,
   incomingChallenges = [],
+  outgoingChallenges = [],
   starterChallengePending = false,
   onStart,
   onStartStarterChallenge,
@@ -21,6 +23,13 @@ export default function HomeScreen({
   const [mode, setMode] = useState(CHALLENGE_MODES.maxReps);
   const [goal, setGoal] = useState(String(defaultGoal || profile.maxPushups || 15));
   const [error, setError] = useState('');
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -152,6 +161,7 @@ export default function HomeScreen({
                   <span>{challengeTitle(duel.challenge)}</span>
                   <strong>{duel.opponent.pseudo}</strong>
                   <p>{duel.challengerResult.pushups} pompes envoyées</p>
+                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="À relever dans" />
                 </div>
                 <div className="challenge-actions">
                   <button className="primary-button" type="button" onClick={() => onAcceptChallenge(duel)}>
@@ -171,6 +181,31 @@ export default function HomeScreen({
           </div>
         )}
       </section>
+
+      {outgoingChallenges.length > 0 && (
+        <section className="challenge-inbox sent-challenge-inbox">
+          <div className="section-title">
+            <h2>Défis envoyés</h2>
+            <button type="button" onClick={onRefreshChallenges}>Actualiser</button>
+          </div>
+
+          <div className="challenge-list">
+            {outgoingChallenges.slice(0, 3).map((duel) => (
+              <article className="challenge-card sent-challenge-card" key={duel.id}>
+                <div className="challenge-icon" aria-hidden="true">
+                  <Icon name="schedule" className="filled" />
+                </div>
+                <div className="challenge-copy">
+                  <span>{challengeTitle(duel.challenge)}</span>
+                  <strong>{duel.opponent.pseudo}</strong>
+                  <p>En attente de sa réponse</p>
+                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="Victoire auto dans" />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="progress-overview" aria-label="Progression">
         <article>
@@ -212,5 +247,17 @@ export default function HomeScreen({
         <HistoryList history={stats.history} limit={3} emptyLabel="Tes 3 derniers combats apparaîtront ici." />
       </section>
     </main>
+  );
+}
+
+function ChallengeCountdown({ expiresAt, now, prefix }) {
+  const remainingMs = getDuelRemainingMs(expiresAt, now);
+  const isUrgent = remainingMs > 0 && remainingMs <= 60 * 60 * 1000;
+
+  return (
+    <small className={`challenge-timer ${isUrgent ? 'urgent' : ''}`}>
+      <Icon name={remainingMs > 0 ? 'timer' : 'sync'} className="filled" />
+      {remainingMs > 0 ? `${prefix} ${formatDuelRemainingTime(remainingMs)}` : 'Résolution en cours'}
+    </small>
   );
 }

@@ -722,6 +722,31 @@ button:disabled {
   font-weight: 850;
 }
 
+.challenge-timer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: rgba(218, 226, 253, 0.72);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+}
+
+.challenge-timer .app-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--cyan);
+}
+
+.challenge-timer.urgent {
+  color: var(--yellow);
+}
+
+.challenge-timer.urgent .app-icon {
+  color: var(--yellow);
+}
+
 .challenge-actions {
   grid-column: 1 / -1;
   display: grid;
@@ -748,6 +773,13 @@ button:disabled {
 .starter-challenge-card .challenge-icon {
   color: var(--yellow);
   background: rgba(254, 201, 49, 0.1);
+}
+
+.sent-challenge-card {
+  border-color: rgba(218, 226, 253, 0.12);
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.06), transparent 48%),
+    var(--surface-low);
 }
 
 .icon-only-button {
@@ -2981,6 +3013,10 @@ button:disabled {
   font-size: 0.78rem;
   font-weight: 720;
   line-height: 1.35;
+}
+
+.sent-card .result-countdown {
+  color: var(--cyan);
 }
 
 .result-actions.single-action {

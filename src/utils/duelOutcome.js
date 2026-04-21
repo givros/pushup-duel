@@ -1,6 +1,7 @@
 import { CHALLENGE_MODES, RESULT_OUTCOMES } from './progression.js';
+import { EXPIRED_DUEL_REASON } from './duelExpiration.js';
 
-const ABANDONED_REASONS = new Set(['forfeit', 'stopped']);
+const ABANDONED_REASONS = new Set(['forfeit', 'stopped', EXPIRED_DUEL_REASON]);
 
 export function getDuelOutcome(duel, role = duel?.role) {
   if (!duel || !role || duel.status !== 'completed' || !duel.challengerResult || !duel.receiverResult) {

@@ -18,7 +18,8 @@ import {
   updateDuelHistoryOutcome,
   updateProgressionSettings
 } from './utils/progression.js';
-import { getDuelOutcome, getOpponentResult } from './utils/duelOutcome.js';
+import { getDuelOutcome, getOpponentResult, getPlayerResult } from './utils/duelOutcome.js';
+import { isDuelExpired } from './utils/duelExpiration.js';
 import { isSupabaseConfigured } from './services/supabaseClient.js';
 import {
   deleteRemoteProgression,
@@ -29,9 +30,11 @@ import {
   completeIncomingChallenge,
   createOutgoingChallenge,
   declineIncomingChallenge,
+  expireStaleDuelChallenges,
   getDuelChallenge,
   listIncomingChallenges,
   listCompletedDuelChallenges,
+  listOutgoingChallenges,
   listOpponentCandidates
 } from './services/duelChallengeService.js';
 
@@ -66,6 +69,7 @@ export default function App() {
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [opponentCandidates, setOpponentCandidates] = useState([]);
   const [incomingChallenges, setIncomingChallenges] = useState([]);
+  const [outgoingChallenges, setOutgoingChallenges] = useState([]);
   const [activeDuel, setActiveDuel] = useState(null);
   const [challengeKey, setChallengeKey] = useState(0);
   const progressionRef = useRef(null);
@@ -143,6 +147,24 @@ export default function App() {
 
     completedDuels.forEach((duel) => {
       const outcome = getDuelOutcome(duel, duel.role);
+      const historyId = getDuelHistoryId(duel.id, duel.role);
+      const hasHistoryEntry = nextProgression.stats.history.some((entry) => entry.id === historyId);
+
+      if (!hasHistoryEntry && duel.role === 'receiver') {
+        const recoveredResult = makeResultFromDuel(duel, duel.role);
+
+        if (recoveredResult) {
+          nextProgression = applyChallengeResult(
+            nextProgression,
+            recoveredResult,
+            makeDuelProgressionOptions(duel, duel.role, recoveredResult)
+          );
+          changed = true;
+        }
+
+        return;
+      }
+
       const resolvedProgression = updateDuelHistoryOutcome(nextProgression, {
         duelId: duel.id,
         role: duel.role,
@@ -164,12 +186,18 @@ export default function App() {
   const refreshIncomingChallenges = useCallback(async () => {
     if (!progressionRef.current?.onboarded) {
       setIncomingChallenges([]);
+      setOutgoingChallenges([]);
       return;
     }
 
     try {
-      const challenges = await listIncomingChallenges();
-      setIncomingChallenges(challenges);
+      await expireStaleDuelChallenges();
+      const [receivedChallenges, sentChallenges] = await Promise.all([
+        listIncomingChallenges(),
+        listOutgoingChallenges()
+      ]);
+      setIncomingChallenges(receivedChallenges);
+      setOutgoingChallenges(sentChallenges);
       await syncCompletedDuelOutcomes();
     } catch (error) {
       setSyncError(getSyncErrorMessage(error));
@@ -325,6 +353,11 @@ export default function App() {
   }
 
   function acceptIncomingChallenge(duel) {
+    if (isDuelExpired(duel.expiresAt)) {
+      refreshIncomingChallenges();
+      return;
+    }
+
     setChallenge(duel.challenge);
     setResult(null);
     setSelectedOpponent(duel.opponent);
@@ -484,6 +517,8 @@ export default function App() {
       setProgression(null);
       setResult(null);
       setSelectedOpponent(null);
+      setIncomingChallenges([]);
+      setOutgoingChallenges([]);
       setActiveDuel(null);
       setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: DEFAULT_PUSHUP_GOAL }));
       setScreen(screens.welcome);
@@ -553,6 +588,7 @@ export default function App() {
           progression={progression}
           defaultGoal={challenge.goal}
           incomingChallenges={incomingChallenges}
+          outgoingChallenges={outgoingChallenges}
           starterChallengePending={!progression.settings.starterChallengeCompleted}
           onStart={startChallenge}
           onStartStarterChallenge={startStarterChallenge}
@@ -619,9 +655,13 @@ function getInitialScreen(progression) {
 function decorateResultWithDuel(result, duel, role) {
   const outcome = getDuelOutcome(duel, role);
   const opponentResult = getOpponentResult(duel, role);
+  const playerResult = getPlayerResult(duel, role);
 
   return {
     ...result,
+    pushups: playerResult?.pushups ?? result.pushups,
+    timeMs: playerResult?.timeMs ?? result.timeMs,
+    reason: playerResult?.reason ?? result.reason,
     mode: duel.challenge.mode,
     goal: duel.challenge.goal,
     durationMs: duel.challenge.durationMs,
@@ -630,6 +670,8 @@ function decorateResultWithDuel(result, duel, role) {
     duelRole: role,
     duelStatus: duel.status,
     duelOutcome: outcome,
+    duelCreatedAt: duel.createdAt,
+    duelExpiresAt: duel.expiresAt,
     opponentName: duel.opponent?.pseudo || result.opponentName || null,
     opponentPushups: opponentResult?.pushups ?? null,
     opponentTimeMs: opponentResult?.timeMs ?? null
@@ -646,6 +688,23 @@ function makeDuelProgressionOptions(duel, role, result) {
     opponentPushups: result.opponentPushups,
     opponentTimeMs: result.opponentTimeMs
   };
+}
+
+function makeResultFromDuel(duel, role) {
+  const playerResult = getPlayerResult(duel, role);
+
+  if (!playerResult) {
+    return null;
+  }
+
+  return decorateResultWithDuel({
+    pushups: playerResult.pushups,
+    timeMs: playerResult.timeMs,
+    reason: playerResult.reason,
+    mode: duel.challenge.mode,
+    goal: duel.challenge.goal,
+    durationMs: duel.challenge.durationMs
+  }, duel, role);
 }
 
 function makePendingResult(result, opponent) {
