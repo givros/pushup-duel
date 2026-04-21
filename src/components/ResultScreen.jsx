@@ -13,8 +13,8 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
   return (
     <main className={`screen result-screen async-result-screen ${isPending ? 'pending-duel-result' : ''}`}>
       <section className={`victory-hero compact-result async-result-hero ${isDefeat ? 'defeat-result' : ''} ${isPending ? 'pending-result' : ''}`}>
-        <p>{isStarterFlow ? 'Profil calibré' : isPending ? 'Duel envoyé' : 'Résultat final'}</p>
-        <h1>{isStarterFlow ? 'Premier score' : getResultTitle(outcome)}</h1>
+        <p>{isStarterFlow ? 'Défi relevé' : isPending ? 'Duel envoyé' : 'Résultat final'}</p>
+        <h1>{isStarterFlow ? 'Score envoyé' : getResultTitle(outcome)}</h1>
       </section>
 
       <section className="result-focus async-result-focus">
@@ -47,7 +47,7 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
         )}
         <div>
           <span>{challengeTitle(result)}</span>
-          <h2>{isStarterFlow ? 'Ton profil est prêt. Tu peux maintenant accéder à l’arène.' : getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
+          <h2>{isStarterFlow ? `Ton score est enregistré face à ${opponentName}. Bienvenue dans l’arène.` : getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
           {hasOpponentScore ? (
             <p>
               Score adversaire : {result.opponentPushups} pompes
@@ -61,7 +61,7 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
 
       <section className="result-actions single-action">
         <button className="primary-button" type="button" onClick={onHome}>
-          {isStarterFlow ? 'Accéder à l’accueil' : 'Retour'}
+          {isStarterFlow ? 'Entrer dans l’arène' : 'Retour'}
         </button>
       </section>
     </main>

@@ -1,5 +1,11 @@
 import Icon from './Icon.jsx';
 
+const challenger = {
+  pseudo: 'MayaCore',
+  stat: 'Record 1 min : 32',
+  rank: 'Rang argent'
+};
+
 export default function StarterChallengePrompt({ profile, onStart }) {
   return (
     <main className="screen starter-screen">
@@ -13,13 +19,24 @@ export default function StarterChallengePrompt({ profile, onStart }) {
         </div>
 
         <div className="starter-copy">
-          <span className="onboarding-kicker">Défi d’entrée</span>
-          <h1 id="starter-title">Avant l’arène</h1>
+          <span className="onboarding-kicker">Défi reçu</span>
+          <h1 id="starter-title">MayaCore te défie</h1>
           <p>
-            Bienvenue {profile?.nickname || 'athlète'}. Pour calibrer ton profil, tu dois réaliser ton premier défi :
+            Bienvenue {profile?.nickname || 'athlète'}. MayaCore vient de t’envoyer un défi découverte :
             faire le maximum de pompes en 1 minute.
           </p>
         </div>
+
+        <section className="starter-challenger" aria-label="Adversaire">
+          <div className="opponent-avatar opponent-maya-starter" aria-hidden="true">
+            <span>M</span>
+          </div>
+          <div>
+            <span>Adversaire</span>
+            <strong>{challenger.pseudo}</strong>
+            <p>{challenger.stat} • {challenger.rank}</p>
+          </div>
+        </section>
 
         <div className="starter-rules">
           <article>
@@ -39,7 +56,7 @@ export default function StarterChallengePrompt({ profile, onStart }) {
         </div>
 
         <button className="primary-button" type="button" onClick={onStart}>
-          Lancer le défi obligatoire
+          Relever le défi
         </button>
       </section>
     </main>

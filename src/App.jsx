@@ -47,6 +47,12 @@ const screens = {
 };
 
 const HOME_REFRESH_INTERVAL_MS = 7000;
+const STARTER_OPPONENT = {
+  id: 'maya-starter',
+  pseudo: 'MayaCore',
+  stat: 'Défi découverte',
+  rank: 'Rang argent'
+};
 
 export default function App() {
   const [bootStatus, setBootStatus] = useState('loading');
@@ -283,7 +289,7 @@ export default function App() {
       goal: currentProgression?.profile?.maxPushups || 20
     }));
     setResult(null);
-    setSelectedOpponent(null);
+    setSelectedOpponent(STARTER_OPPONENT);
     setActiveDuel({ type: 'starter' });
     setChallengeKey((key) => key + 1);
     setScreen(screens.challenge);
