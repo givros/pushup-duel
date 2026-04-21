@@ -19,7 +19,7 @@ export default function HomeScreen({
   const profile = progression.profile;
   const stats = progression.stats;
   const [mode, setMode] = useState(CHALLENGE_MODES.maxReps);
-  const [goal, setGoal] = useState(String(defaultGoal || profile.maxPushups || 20));
+  const [goal, setGoal] = useState(String(defaultGoal || profile.maxPushups || 15));
   const [error, setError] = useState('');
 
   function handleSubmit(event) {
@@ -132,7 +132,7 @@ export default function HomeScreen({
                   <Icon name="bolt" className="filled" />
                 </div>
                 <div className="challenge-copy">
-                  <span>Maximum de pompes en 1 min</span>
+                  <span>15 pompes le plus vite possible</span>
                   <strong>MayaCore</strong>
                   <p>Défi découverte à relever</p>
                 </div>

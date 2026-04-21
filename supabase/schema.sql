@@ -3,7 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.player_accounts (
   user_id uuid primary key references auth.users(id) on delete cascade,
   nickname text not null,
-  max_pushups integer not null default 20 check (max_pushups between 1 and 999),
+  max_pushups integer not null default 15 check (max_pushups between 1 and 999),
   level integer not null default 1 check (level >= 1),
   xp integer not null default 0 check (xp >= 0),
   coins integer not null default 0 check (coins >= 0),

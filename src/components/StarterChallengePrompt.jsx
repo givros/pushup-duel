@@ -2,7 +2,7 @@ import Icon from './Icon.jsx';
 
 const challenger = {
   pseudo: 'MayaCore',
-  stat: 'Record 1 min : 32',
+  stat: 'Défi : 15 pompes',
   rank: 'Rang argent'
 };
 
@@ -23,7 +23,7 @@ export default function StarterChallengePrompt({ profile, onStart }) {
           <h1 id="starter-title">MayaCore te défie</h1>
           <p>
             Bienvenue {profile?.nickname || 'athlète'}. MayaCore vient de t’envoyer un défi découverte :
-            faire le maximum de pompes en 1 minute.
+            réaliser 15 pompes le plus rapidement possible.
           </p>
         </div>
 
@@ -40,10 +40,10 @@ export default function StarterChallengePrompt({ profile, onStart }) {
 
         <div className="starter-rules">
           <article>
-            <Icon name="timer" className="filled" />
+            <Icon name="flag" className="filled" />
             <div>
-              <strong>60 secondes</strong>
-              <span>Le chrono démarre après la détection.</span>
+              <strong>15 pompes</strong>
+              <span>Atteins l’objectif sans te précipiter.</span>
             </div>
           </article>
           <article>

@@ -50,16 +50,18 @@ const HOME_REFRESH_INTERVAL_MS = 7000;
 const STARTER_OPPONENT = {
   id: 'maya-starter',
   pseudo: 'MayaCore',
-  stat: 'Défi découverte',
+  stat: 'Défi 15 pompes',
   rank: 'Rang argent'
 };
+const DEFAULT_PUSHUP_GOAL = 15;
+const STARTER_CHALLENGE_GOAL = 15;
 
 export default function App() {
   const [bootStatus, setBootStatus] = useState('loading');
   const [syncError, setSyncError] = useState('');
   const [progression, setProgression] = useState(null);
   const [screen, setScreen] = useState(screens.welcome);
-  const [challenge, setChallenge] = useState(() => makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
+  const [challenge, setChallenge] = useState(() => makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: DEFAULT_PUSHUP_GOAL }));
   const [result, setResult] = useState(null);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [opponentCandidates, setOpponentCandidates] = useState([]);
@@ -93,7 +95,7 @@ export default function App() {
         setProgression(savedProgression);
         setChallenge(makeChallenge({
           mode: CHALLENGE_MODES.maxReps,
-          goal: savedProgression?.profile?.maxPushups || 20
+          goal: savedProgression?.profile?.maxPushups || DEFAULT_PUSHUP_GOAL
         }));
         setScreen(getInitialScreen(savedProgression));
         setBootStatus('ready');
@@ -273,7 +275,7 @@ export default function App() {
 
     try {
       const savedProgression = await persistProgression(nextProgression);
-      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: savedProgression.profile.maxPushups }));
+      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.fixedGoal, goal: STARTER_CHALLENGE_GOAL }));
       setActiveDuel({ type: 'starter' });
       setScreen(screens.starter);
     } catch {
@@ -285,8 +287,8 @@ export default function App() {
     const currentProgression = progressionRef.current;
 
     setChallenge(makeChallenge({
-      mode: CHALLENGE_MODES.maxReps,
-      goal: currentProgression?.profile?.maxPushups || 20
+      mode: CHALLENGE_MODES.fixedGoal,
+      goal: STARTER_CHALLENGE_GOAL
     }));
     setResult(null);
     setSelectedOpponent(STARTER_OPPONENT);
@@ -483,7 +485,7 @@ export default function App() {
       setResult(null);
       setSelectedOpponent(null);
       setActiveDuel(null);
-      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
+      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: DEFAULT_PUSHUP_GOAL }));
       setScreen(screens.welcome);
     } catch (error) {
       setSyncError(getSyncErrorMessage(error));

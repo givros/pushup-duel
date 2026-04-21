@@ -19,7 +19,7 @@ export function createProgression({ nickname, maxPushups }) {
     onboarded: true,
     profile: {
       nickname: sanitizeNickname(nickname),
-      maxPushups: clampInteger(maxPushups, 1, 999, 20),
+      maxPushups: clampInteger(maxPushups, 1, 999, 15),
       level: 1,
       xp: 0,
       coins: 0
@@ -174,7 +174,7 @@ export function updateProgressionSettings(progression, settings) {
 
 export function makeChallenge({ mode, goal }) {
   const nextMode = mode === CHALLENGE_MODES.fixedGoal ? CHALLENGE_MODES.fixedGoal : CHALLENGE_MODES.maxReps;
-  const nextGoal = clampInteger(goal, 1, 999, 20);
+  const nextGoal = clampInteger(goal, 1, 999, 15);
 
   return {
     mode: nextMode,
@@ -200,7 +200,7 @@ export function normalizeProgression(progression) {
     onboarded: Boolean(progression?.onboarded),
     profile: {
       nickname: sanitizeNickname(profile.nickname || 'Athlète'),
-      maxPushups: clampInteger(profile.maxPushups, 1, 999, 20),
+      maxPushups: clampInteger(profile.maxPushups, 1, 999, 15),
       level: clampInteger(profile.level, 1, 999, 1),
       xp: clampInteger(profile.xp, 0, 999999, 0),
       coins: clampInteger(profile.coins, 0, 999999, 0)
@@ -260,7 +260,7 @@ function normalizeHistoryEntry(entry) {
   return {
     id: typeof entry.id === 'string' ? entry.id : `${completedAt}-${Math.random().toString(36).slice(2, 8)}`,
     mode: entry.mode === CHALLENGE_MODES.fixedGoal ? CHALLENGE_MODES.fixedGoal : CHALLENGE_MODES.maxReps,
-    goal: clampInteger(entry.goal, 1, 999, 20),
+    goal: clampInteger(entry.goal, 1, 999, 15),
     durationMs: typeof entry.durationMs === 'number' ? Math.max(0, entry.durationMs) : null,
     pushups: clampInteger(entry.pushups, 0, 999999, 0),
     timeMs: typeof entry.timeMs === 'number' ? Math.max(0, entry.timeMs) : 0,

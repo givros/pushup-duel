@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function ProfileSetupScreen({ onComplete }) {
   const [nickname, setNickname] = useState('');
-  const [maxPushups, setMaxPushups] = useState('20');
+  const [maxPushups, setMaxPushups] = useState('15');
   const [error, setError] = useState('');
 
   function handleSubmit(event) {
