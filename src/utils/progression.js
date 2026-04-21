@@ -1,3 +1,5 @@
+import { EXPIRED_DUEL_REASON } from './duelExpiration.js';
+
 export const CHALLENGE_MODES = {
   maxReps: 'max_reps',
   fixedGoal: 'fixed_goal'
@@ -117,7 +119,8 @@ export function updateDuelHistoryOutcome(progression, { duelId, role, outcome, o
       ...entry,
       outcome: nextOutcome,
       opponentPushups: opponentResult?.pushups ?? entry.opponentPushups ?? null,
-      opponentTimeMs: opponentResult?.timeMs ?? entry.opponentTimeMs ?? null
+      opponentTimeMs: opponentResult?.timeMs ?? entry.opponentTimeMs ?? null,
+      opponentReason: opponentResult?.reason ?? entry.opponentReason ?? null
     };
   });
 
@@ -146,7 +149,8 @@ export function updateDuelHistoryOutcome(progression, { duelId, role, outcome, o
             duelOutcome: nextOutcome,
             duelStatus: 'completed',
             opponentPushups: opponentResult?.pushups ?? lastResult.opponentPushups ?? null,
-            opponentTimeMs: opponentResult?.timeMs ?? lastResult.opponentTimeMs ?? null
+            opponentTimeMs: opponentResult?.timeMs ?? lastResult.opponentTimeMs ?? null,
+            opponentReason: opponentResult?.reason ?? lastResult.opponentReason ?? null
           }
         : lastResult,
       history: nextHistory
@@ -242,6 +246,7 @@ function makeHistoryEntry(result, xpEarned, coinsEarned, outcome, options) {
     opponentName: options.opponentName || result.opponentName || null,
     opponentPushups: options.opponentPushups ?? result.opponentPushups ?? null,
     opponentTimeMs: options.opponentTimeMs ?? result.opponentTimeMs ?? null,
+    opponentReason: options.opponentReason ?? result.opponentReason ?? null,
     xpEarned,
     coinsEarned,
     completedAt
@@ -271,6 +276,7 @@ function normalizeHistoryEntry(entry) {
     opponentName: typeof entry.opponentName === 'string' ? entry.opponentName : null,
     opponentPushups: typeof entry.opponentPushups === 'number' ? Math.max(0, entry.opponentPushups) : null,
     opponentTimeMs: typeof entry.opponentTimeMs === 'number' ? Math.max(0, entry.opponentTimeMs) : null,
+    opponentReason: typeof entry.opponentReason === 'string' ? entry.opponentReason : null,
     xpEarned: clampInteger(entry.xpEarned, 0, 999999, 0),
     coinsEarned: clampInteger(entry.coinsEarned, 0, 999999, 0),
     completedAt
@@ -278,7 +284,7 @@ function normalizeHistoryEntry(entry) {
 }
 
 function defaultOutcomeForResult(result) {
-  if (result?.reason === 'forfeit' || result?.reason === 'stopped') {
+  if (result?.reason === 'forfeit' || result?.reason === 'stopped' || result?.reason === EXPIRED_DUEL_REASON) {
     return RESULT_OUTCOMES.defeat;
   }
 

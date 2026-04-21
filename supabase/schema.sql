@@ -46,6 +46,12 @@ create table if not exists public.player_history (
   time_ms double precision not null default 0 check (time_ms >= 0),
   reason text not null,
   outcome text not null check (outcome in ('victory', 'defeat', 'pending', 'draw')),
+  duel_id uuid,
+  duel_role text check (duel_role is null or duel_role in ('challenger', 'receiver')),
+  opponent_name text,
+  opponent_pushups integer check (opponent_pushups is null or opponent_pushups >= 0),
+  opponent_time_ms double precision check (opponent_time_ms is null or opponent_time_ms >= 0),
+  opponent_reason text,
   xp_earned integer not null default 0 check (xp_earned >= 0),
   coins_earned integer not null default 0 check (coins_earned >= 0),
   completed_at timestamptz not null default now(),
@@ -57,6 +63,39 @@ alter table public.player_history drop constraint if exists player_history_outco
 alter table public.player_history
 add constraint player_history_outcome_check
 check (outcome in ('victory', 'defeat', 'pending', 'draw'));
+
+alter table public.player_history
+add column if not exists duel_id uuid;
+
+alter table public.player_history
+add column if not exists duel_role text;
+
+alter table public.player_history
+add column if not exists opponent_name text;
+
+alter table public.player_history
+add column if not exists opponent_pushups integer;
+
+alter table public.player_history
+add column if not exists opponent_time_ms double precision;
+
+alter table public.player_history
+add column if not exists opponent_reason text;
+
+alter table public.player_history drop constraint if exists player_history_duel_role_check;
+alter table public.player_history
+add constraint player_history_duel_role_check
+check (duel_role is null or duel_role in ('challenger', 'receiver'));
+
+alter table public.player_history drop constraint if exists player_history_opponent_pushups_check;
+alter table public.player_history
+add constraint player_history_opponent_pushups_check
+check (opponent_pushups is null or opponent_pushups >= 0);
+
+alter table public.player_history drop constraint if exists player_history_opponent_time_ms_check;
+alter table public.player_history
+add constraint player_history_opponent_time_ms_check
+check (opponent_time_ms is null or opponent_time_ms >= 0);
 
 create table if not exists public.duel_challenges (
   id uuid primary key default gen_random_uuid(),

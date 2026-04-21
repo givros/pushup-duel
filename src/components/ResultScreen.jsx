@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from './Icon.jsx';
 import { CHALLENGE_MODES, RESULT_OUTCOMES, challengeTitle } from '../utils/progression.js';
 import { formatDuelRemainingTime, getDuelRemainingMs } from '../utils/duelExpiration.js';
 
@@ -78,6 +79,23 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
           )}
         </div>
       </section>
+
+      {isPending && !isStarterFlow && (
+        <section className="async-result-help" aria-label="Suite du duel">
+          <article>
+            <Icon name="timer" className="filled" />
+            <span>Ton adversaire a 24h pour répondre.</span>
+          </article>
+          <article>
+            <Icon name="check_circle" className="filled" />
+            <span>Si aucun score n’est envoyé, tu gagnes automatiquement.</span>
+          </article>
+          <article>
+            <Icon name="leaderboard" className="filled" />
+            <span>Tu verras le résultat dans ton historique.</span>
+          </article>
+        </section>
+      )}
 
       <section className="result-actions single-action">
         <button className="primary-button" type="button" onClick={onHome}>

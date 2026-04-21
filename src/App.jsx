@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
 import ProfileSetupScreen from './components/ProfileSetupScreen.jsx';
 import StarterChallengePrompt from './components/StarterChallengePrompt.jsx';
+import CameraGuideScreen from './components/CameraGuideScreen.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
+import ChallengesScreen from './components/ChallengesScreen.jsx';
 import MatchmakingScreen from './components/MatchmakingScreen.jsx';
 import CameraChallenge from './components/CameraChallenge.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
@@ -42,7 +44,9 @@ const screens = {
   welcome: 'welcome',
   setup: 'setup',
   starter: 'starter',
+  cameraGuide: 'cameraGuide',
   home: 'home',
+  challenges: 'challenges',
   matchmaking: 'matchmaking',
   challenge: 'challenge',
   result: 'result',
@@ -205,7 +209,11 @@ export default function App() {
   }, [syncCompletedDuelOutcomes]);
 
   useEffect(() => {
-    if (bootStatus !== 'ready' || !progression?.onboarded || screen !== screens.home) {
+    if (
+      bootStatus !== 'ready' ||
+      !progression?.onboarded ||
+      (screen !== screens.home && screen !== screens.challenges)
+    ) {
       return undefined;
     }
 
@@ -302,18 +310,25 @@ export default function App() {
     const nextProgression = createProgression(profile);
 
     try {
-      const savedProgression = await persistProgression(nextProgression);
-      setChallenge(makeChallenge({ mode: CHALLENGE_MODES.fixedGoal, goal: STARTER_CHALLENGE_GOAL }));
-      setActiveDuel({ type: 'starter' });
+      await persistProgression(nextProgression);
       setScreen(screens.starter);
     } catch {
       setScreen(screens.setup);
     }
   }
 
-  function startStarterChallenge() {
-    const currentProgression = progressionRef.current;
+  function openStarterCameraGuide() {
+    setChallenge(makeChallenge({
+      mode: CHALLENGE_MODES.fixedGoal,
+      goal: STARTER_CHALLENGE_GOAL
+    }));
+    setResult(null);
+    setSelectedOpponent(STARTER_OPPONENT);
+    setActiveDuel({ type: 'starter' });
+    setScreen(screens.cameraGuide);
+  }
 
+  function startStarterChallenge() {
     setChallenge(makeChallenge({
       mode: CHALLENGE_MODES.fixedGoal,
       goal: STARTER_CHALLENGE_GOAL
@@ -327,7 +342,7 @@ export default function App() {
 
   function startChallenge(nextChallenge) {
     if (progressionRef.current?.onboarded && !progressionRef.current.settings.starterChallengeCompleted) {
-      startStarterChallenge();
+      openStarterCameraGuide();
       return;
     }
 
@@ -507,6 +522,23 @@ export default function App() {
     refreshIncomingChallenges();
   }
 
+  function handleNavNavigate(destination) {
+    if (destination === 'challenges') {
+      setScreen(screens.challenges);
+      refreshIncomingChallenges();
+      return;
+    }
+
+    if (destination === 'settings') {
+      openSettings();
+      return;
+    }
+
+    if (destination === 'home') {
+      goHome();
+    }
+  }
+
   function openSettings() {
     setScreen(screens.settings);
   }
@@ -579,22 +611,35 @@ export default function App() {
       {screen === screens.starter && progression?.onboarded && (
         <StarterChallengePrompt
           profile={progression.profile}
-          onStart={startStarterChallenge}
+          onStart={openStarterCameraGuide}
         />
+      )}
+
+      {screen === screens.cameraGuide && progression?.onboarded && (
+        <CameraGuideScreen onStart={startStarterChallenge} />
       )}
 
       {screen === screens.home && progression?.onboarded && (
         <HomeScreen
           progression={progression}
           defaultGoal={challenge.goal}
+          starterChallengePending={!progression.settings.starterChallengeCompleted}
+          onStart={startChallenge}
+          onStartStarterChallenge={openStarterCameraGuide}
+          onOpenSettings={openSettings}
+        />
+      )}
+
+      {screen === screens.challenges && progression?.onboarded && (
+        <ChallengesScreen
+          progression={progression}
           incomingChallenges={incomingChallenges}
           outgoingChallenges={outgoingChallenges}
           starterChallengePending={!progression.settings.starterChallengeCompleted}
-          onStart={startChallenge}
-          onStartStarterChallenge={startStarterChallenge}
           onAcceptChallenge={acceptIncomingChallenge}
           onDeclineChallenge={declineChallenge}
           onRefreshChallenges={refreshIncomingChallenges}
+          onStartStarterChallenge={openStarterCameraGuide}
           onOpenSettings={openSettings}
         />
       )}
@@ -639,7 +684,9 @@ export default function App() {
         />
       )}
 
-      {progression?.onboarded && screen !== screens.result && screen !== screens.starter && activeDuel?.type !== 'starter' && <BottomNav />}
+      {progression?.onboarded && screen !== screens.result && screen !== screens.starter && screen !== screens.cameraGuide && activeDuel?.type !== 'starter' && (
+        <BottomNav active={getActiveNav(screen)} onNavigate={handleNavNavigate} />
+      )}
     </div>
   );
 }
@@ -650,6 +697,18 @@ function getInitialScreen(progression) {
   }
 
   return progression.settings.starterChallengeCompleted ? screens.home : screens.starter;
+}
+
+function getActiveNav(screen) {
+  if (screen === screens.challenges) {
+    return 'challenges';
+  }
+
+  if (screen === screens.settings) {
+    return 'settings';
+  }
+
+  return 'home';
 }
 
 function decorateResultWithDuel(result, duel, role) {
@@ -674,7 +733,8 @@ function decorateResultWithDuel(result, duel, role) {
     duelExpiresAt: duel.expiresAt,
     opponentName: duel.opponent?.pseudo || result.opponentName || null,
     opponentPushups: opponentResult?.pushups ?? null,
-    opponentTimeMs: opponentResult?.timeMs ?? null
+    opponentTimeMs: opponentResult?.timeMs ?? null,
+    opponentReason: opponentResult?.reason ?? null
   };
 }
 
@@ -686,7 +746,8 @@ function makeDuelProgressionOptions(duel, role, result) {
     duelRole: role,
     opponentName: duel.opponent?.pseudo || null,
     opponentPushups: result.opponentPushups,
-    opponentTimeMs: result.opponentTimeMs
+    opponentTimeMs: result.opponentTimeMs,
+    opponentReason: result.opponentReason
   };
 }
 

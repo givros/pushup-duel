@@ -100,12 +100,7 @@ export async function saveRemoteProgression(progression) {
   }
 
   if (normalized.stats.history.length > 0) {
-    const { error: historyError } = await supabase
-      .from(TABLES.history)
-      .upsert(
-        normalized.stats.history.map((entry) => historyRowFromEntry(userId, entry)),
-        { onConflict: 'id' }
-      );
+    const { error: historyError } = await upsertHistory(supabase, userId, normalized.stats.history);
 
     if (historyError) {
       throw makeRepositoryError('Impossible de sauvegarder ton historique.', historyError);
@@ -183,6 +178,26 @@ async function upsertSettings(supabase, userId, progression) {
   );
 }
 
+async function upsertHistory(supabase, userId, history) {
+  const result = await supabase
+    .from(TABLES.history)
+    .upsert(
+      history.map((entry) => historyRowFromEntry(userId, entry)),
+      { onConflict: 'id' }
+    );
+
+  if (!isHistoryMetadataColumnMissing(result.error)) {
+    return result;
+  }
+
+  return supabase
+    .from(TABLES.history)
+    .upsert(
+      history.map((entry) => historyRowFromEntry(userId, entry, { includeDuelMetadata: false })),
+      { onConflict: 'id' }
+    );
+}
+
 function progressionFromRows({ account, settings, stats, history }) {
   return normalizeProgression({
     onboarded: true,
@@ -255,8 +270,8 @@ function statsRowFromProgression(userId, progression) {
   };
 }
 
-function historyRowFromEntry(userId, entry) {
-  return {
+function historyRowFromEntry(userId, entry, options = {}) {
+  const row = {
     id: entry.id,
     user_id: userId,
     mode: entry.mode,
@@ -270,6 +285,17 @@ function historyRowFromEntry(userId, entry) {
     coins_earned: entry.coinsEarned,
     completed_at: entry.completedAt
   };
+
+  if (options.includeDuelMetadata !== false) {
+    row.duel_id = entry.duelId;
+    row.duel_role = entry.duelRole;
+    row.opponent_name = entry.opponentName;
+    row.opponent_pushups = entry.opponentPushups;
+    row.opponent_time_ms = entry.opponentTimeMs;
+    row.opponent_reason = entry.opponentReason;
+  }
+
+  return row;
 }
 
 function historyEntryFromRow(row) {
@@ -282,6 +308,12 @@ function historyEntryFromRow(row) {
     timeMs: row.time_ms,
     reason: row.reason,
     outcome: row.outcome,
+    duelId: row.duel_id,
+    duelRole: row.duel_role,
+    opponentName: row.opponent_name,
+    opponentPushups: row.opponent_pushups,
+    opponentTimeMs: row.opponent_time_ms,
+    opponentReason: row.opponent_reason,
     xpEarned: row.xp_earned,
     coinsEarned: row.coins_earned,
     completedAt: row.completed_at
@@ -317,6 +349,22 @@ function isStarterChallengeColumnMissing(error) {
       (
         error.code === 'PGRST204' ||
         error.message?.includes('starter_challenge_completed') ||
+        error.message?.includes('schema cache')
+      )
+  );
+}
+
+function isHistoryMetadataColumnMissing(error) {
+  return Boolean(
+    error &&
+      (
+        error.code === 'PGRST204' ||
+        error.message?.includes('duel_id') ||
+        error.message?.includes('duel_role') ||
+        error.message?.includes('opponent_name') ||
+        error.message?.includes('opponent_pushups') ||
+        error.message?.includes('opponent_time_ms') ||
+        error.message?.includes('opponent_reason') ||
         error.message?.includes('schema cache')
       )
   );
