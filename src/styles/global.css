@@ -729,9 +729,25 @@ button:disabled {
   gap: 10px;
 }
 
+.challenge-actions.single {
+  grid-template-columns: 1fr;
+}
+
 .challenge-actions .primary-button,
 .challenge-actions .secondary-button {
   min-height: 44px;
+}
+
+.starter-challenge-card {
+  border-color: rgba(254, 201, 49, 0.32);
+  background:
+    linear-gradient(135deg, rgba(254, 201, 49, 0.08), transparent 48%),
+    var(--surface-low);
+}
+
+.starter-challenge-card .challenge-icon {
+  color: var(--yellow);
+  background: rgba(254, 201, 49, 0.1);
 }
 
 .icon-only-button {

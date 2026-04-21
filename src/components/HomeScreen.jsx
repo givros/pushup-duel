@@ -8,7 +8,9 @@ export default function HomeScreen({
   progression,
   defaultGoal,
   incomingChallenges = [],
+  starterChallengePending = false,
   onStart,
+  onStartStarterChallenge,
   onAcceptChallenge,
   onDeclineChallenge,
   onRefreshChallenges,
@@ -23,6 +25,11 @@ export default function HomeScreen({
   function handleSubmit(event) {
     event.preventDefault();
     const parsedGoal = Number(goal);
+
+    if (starterChallengePending) {
+      setError('Relève d’abord le défi reçu par MayaCore.');
+      return;
+    }
 
     if (mode === CHALLENGE_MODES.fixedGoal && (!Number.isInteger(parsedGoal) || parsedGoal < 1 || parsedGoal > 999)) {
       setError('Entre un objectif entre 1 et 999 pompes.');
@@ -105,7 +112,7 @@ export default function HomeScreen({
 
             <button className="launch-button" type="submit">
               <Icon name="play_arrow" className="filled" />
-              Lancer un duel
+              {starterChallengePending ? 'Défi reçu à relever' : 'Lancer un duel'}
             </button>
           </form>
         </div>
@@ -117,8 +124,25 @@ export default function HomeScreen({
           <button type="button" onClick={onRefreshChallenges}>Actualiser</button>
         </div>
 
-        {incomingChallenges.length > 0 ? (
+        {starterChallengePending || incomingChallenges.length > 0 ? (
           <div className="challenge-list">
+            {starterChallengePending && (
+              <article className="challenge-card starter-challenge-card">
+                <div className="challenge-icon" aria-hidden="true">
+                  <Icon name="bolt" className="filled" />
+                </div>
+                <div className="challenge-copy">
+                  <span>Maximum de pompes en 1 min</span>
+                  <strong>MayaCore</strong>
+                  <p>Défi découverte à relever</p>
+                </div>
+                <div className="challenge-actions single">
+                  <button className="primary-button" type="button" onClick={onStartStarterChallenge}>
+                    Relever
+                  </button>
+                </div>
+              </article>
+            )}
             {incomingChallenges.slice(0, 3).map((duel) => (
               <article className="challenge-card" key={duel.id}>
                 <div className="challenge-icon" aria-hidden="true">

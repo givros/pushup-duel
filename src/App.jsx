@@ -296,6 +296,11 @@ export default function App() {
   }
 
   function startChallenge(nextChallenge) {
+    if (progressionRef.current?.onboarded && !progressionRef.current.settings.starterChallengeCompleted) {
+      startStarterChallenge();
+      return;
+    }
+
     setChallenge(nextChallenge);
     setResult(null);
     setSelectedOpponent(null);
@@ -364,6 +369,15 @@ export default function App() {
       mode: challenge.mode,
       durationMs: challenge.durationMs
     };
+
+    if (activeDuel?.type === 'starter' && isAbandonedResult(resultWithMode)) {
+      setResult(null);
+      setActiveDuel(null);
+      setSelectedOpponent(null);
+      setScreen(screens.home);
+      return;
+    }
+
     let displayResult = {
       ...resultWithMode,
       outcome: getLocalOutcome(resultWithMode)
@@ -452,11 +466,6 @@ export default function App() {
   }
 
   function goHome() {
-    if (progressionRef.current?.onboarded && !progressionRef.current.settings.starterChallengeCompleted) {
-      setScreen(screens.starter);
-      return;
-    }
-
     setResult(null);
     setActiveDuel(null);
     setScreen(screens.home);
@@ -542,7 +551,9 @@ export default function App() {
           progression={progression}
           defaultGoal={challenge.goal}
           incomingChallenges={incomingChallenges}
+          starterChallengePending={!progression.settings.starterChallengeCompleted}
           onStart={startChallenge}
+          onStartStarterChallenge={startStarterChallenge}
           onAcceptChallenge={acceptIncomingChallenge}
           onDeclineChallenge={declineChallenge}
           onRefreshChallenges={refreshIncomingChallenges}
