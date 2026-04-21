@@ -47,6 +47,8 @@ L'application utilise Supabase Auth en connexion anonyme, puis stocke les donné
 
 La session anonyme permet de garder un profil par navigateur sans écran de login. Le compte applicatif est créé uniquement lorsque l'utilisateur valide l'onboarding.
 
+Au premier lancement, l'onboarding présente l'application en 3 étapes, puis demande la création du profil. Les nouveaux comptes doivent ensuite réaliser un défi d'entrée obligatoire avant d'accéder à l'accueil. Ce défi sert à calibrer le profil et n'est demandé qu'une seule fois.
+
 Les défis reçus sont affichés sur l'accueil. Pour tester le flow complet, créer deux comptes depuis deux navigateurs ou deux profils de navigateur différents, puis lancer un duel depuis le premier compte vers le second.
 
 Un duel envoyé reste en attente tant que l'adversaire n'a pas terminé son score. Quand les deux scores sont disponibles, l'application compare automatiquement les résultats et met à jour l'écran de résultat ainsi que l'historique en victoire, défaite ou égalité.

@@ -84,10 +84,7 @@ export async function saveRemoteProgression(progression) {
   );
 
   const [settingsResult, statsResult] = await Promise.all([
-    supabase.from(TABLES.settings).upsert(
-      settingsRowFromProgression(userId, normalized),
-      { onConflict: 'user_id' }
-    ),
+    upsertSettings(supabase, userId, normalized),
     supabase.from(TABLES.stats).upsert(
       statsRowFromProgression(userId, normalized),
       { onConflict: 'user_id' }
@@ -170,6 +167,22 @@ async function upsertOrThrow(request, message) {
   }
 }
 
+async function upsertSettings(supabase, userId, progression) {
+  const result = await supabase.from(TABLES.settings).upsert(
+    settingsRowFromProgression(userId, progression),
+    { onConflict: 'user_id' }
+  );
+
+  if (!isStarterChallengeColumnMissing(result.error)) {
+    return result;
+  }
+
+  return supabase.from(TABLES.settings).upsert(
+    settingsRowFromProgression(userId, progression, { includeStarterChallenge: false }),
+    { onConflict: 'user_id' }
+  );
+}
+
 function progressionFromRows({ account, settings, stats, history }) {
   return normalizeProgression({
     onboarded: true,
@@ -182,7 +195,8 @@ function progressionFromRows({ account, settings, stats, history }) {
     },
     settings: {
       cameraPermission: settings?.camera_permission,
-      cameraCheckedAt: settings?.camera_checked_at
+      cameraCheckedAt: settings?.camera_checked_at,
+      starterChallengeCompleted: settings?.starter_challenge_completed
     },
     stats: {
       sessions: stats?.sessions,
@@ -214,12 +228,18 @@ function accountRowFromProgression(userId, progression) {
   };
 }
 
-function settingsRowFromProgression(userId, progression) {
-  return {
+function settingsRowFromProgression(userId, progression, options = {}) {
+  const row = {
     user_id: userId,
     camera_permission: progression.settings.cameraPermission,
     camera_checked_at: progression.settings.cameraCheckedAt
   };
+
+  if (options.includeStarterChallenge !== false) {
+    row.starter_challenge_completed = progression.settings.starterChallengeCompleted;
+  }
+
+  return row;
 }
 
 function statsRowFromProgression(userId, progression) {
@@ -289,4 +309,15 @@ function makeRepositoryError(message, cause) {
   const error = new Error(message);
   error.cause = cause;
   return error;
+}
+
+function isStarterChallengeColumnMissing(error) {
+  return Boolean(
+    error &&
+      (
+        error.code === 'PGRST204' ||
+        error.message?.includes('starter_challenge_completed') ||
+        error.message?.includes('schema cache')
+      )
+  );
 }

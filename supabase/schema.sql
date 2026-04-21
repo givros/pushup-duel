@@ -15,9 +15,13 @@ create table if not exists public.player_settings (
   user_id uuid primary key references public.player_accounts(user_id) on delete cascade,
   camera_permission text not null default 'unknown' check (camera_permission in ('unknown', 'granted', 'denied')),
   camera_checked_at timestamptz,
+  starter_challenge_completed boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.player_settings
+add column if not exists starter_challenge_completed boolean not null default true;
 
 create table if not exists public.player_stats (
   user_id uuid primary key references public.player_accounts(user_id) on delete cascade,

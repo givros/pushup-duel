@@ -2,6 +2,7 @@ import { CHALLENGE_MODES, RESULT_OUTCOMES, challengeTitle } from '../utils/progr
 
 export default function ResultScreen({ result, opponent, flow = 'outgoing', onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
+  const isStarterFlow = flow === 'starter';
   const opponentName = opponent?.pseudo || result.opponentName || 'votre adversaire';
   const isIncomingAnswer = flow === 'incoming';
   const outcome = result.duelOutcome || result.outcome || RESULT_OUTCOMES.pending;
@@ -12,8 +13,8 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
   return (
     <main className={`screen result-screen async-result-screen ${isPending ? 'pending-duel-result' : ''}`}>
       <section className={`victory-hero compact-result async-result-hero ${isDefeat ? 'defeat-result' : ''} ${isPending ? 'pending-result' : ''}`}>
-        <p>{isPending ? 'Duel envoyé' : 'Résultat final'}</p>
-        <h1>{getResultTitle(outcome)}</h1>
+        <p>{isStarterFlow ? 'Profil calibré' : isPending ? 'Duel envoyé' : 'Résultat final'}</p>
+        <h1>{isStarterFlow ? 'Premier score' : getResultTitle(outcome)}</h1>
       </section>
 
       <section className="result-focus async-result-focus">
@@ -46,7 +47,7 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
         )}
         <div>
           <span>{challengeTitle(result)}</span>
-          <h2>{getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
+          <h2>{isStarterFlow ? 'Ton profil est prêt. Tu peux maintenant accéder à l’arène.' : getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
           {hasOpponentScore ? (
             <p>
               Score adversaire : {result.opponentPushups} pompes
@@ -60,7 +61,7 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
 
       <section className="result-actions single-action">
         <button className="primary-button" type="button" onClick={onHome}>
-          Retour
+          {isStarterFlow ? 'Accéder à l’accueil' : 'Retour'}
         </button>
       </section>
     </main>

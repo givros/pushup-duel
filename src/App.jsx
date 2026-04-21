@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
 import ProfileSetupScreen from './components/ProfileSetupScreen.jsx';
+import StarterChallengePrompt from './components/StarterChallengePrompt.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import MatchmakingScreen from './components/MatchmakingScreen.jsx';
 import CameraChallenge from './components/CameraChallenge.jsx';
@@ -37,6 +38,7 @@ import {
 const screens = {
   welcome: 'welcome',
   setup: 'setup',
+  starter: 'starter',
   home: 'home',
   matchmaking: 'matchmaking',
   challenge: 'challenge',
@@ -87,7 +89,7 @@ export default function App() {
           mode: CHALLENGE_MODES.maxReps,
           goal: savedProgression?.profile?.maxPushups || 20
         }));
-        setScreen(savedProgression?.onboarded ? screens.home : screens.welcome);
+        setScreen(getInitialScreen(savedProgression));
         setBootStatus('ready');
       } catch (error) {
         if (!cancelled) {
@@ -266,10 +268,25 @@ export default function App() {
     try {
       const savedProgression = await persistProgression(nextProgression);
       setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: savedProgression.profile.maxPushups }));
-      setScreen(screens.home);
+      setActiveDuel({ type: 'starter' });
+      setScreen(screens.starter);
     } catch {
       setScreen(screens.setup);
     }
+  }
+
+  function startStarterChallenge() {
+    const currentProgression = progressionRef.current;
+
+    setChallenge(makeChallenge({
+      mode: CHALLENGE_MODES.maxReps,
+      goal: currentProgression?.profile?.maxPushups || 20
+    }));
+    setResult(null);
+    setSelectedOpponent(null);
+    setActiveDuel({ type: 'starter' });
+    setChallengeKey((key) => key + 1);
+    setScreen(screens.challenge);
   }
 
   function startChallenge(nextChallenge) {
@@ -369,6 +386,15 @@ export default function App() {
               opponentName: activeDuel.duel.opponent?.pseudo || null
             };
           }
+        } else if (activeDuel?.type === 'starter') {
+          displayResult = {
+            ...resultWithMode,
+            outcome: getLocalOutcome(resultWithMode),
+            starterChallenge: true
+          };
+          progressionOptions = {
+            outcome: displayResult.outcome
+          };
         } else if (shouldSendOutgoingDuel(resultWithMode, activeDuel, selectedOpponent)) {
           const sentDuel = await createOutgoingChallenge({
             challenge,
@@ -406,7 +432,10 @@ export default function App() {
         }
       }
 
-      const nextProgression = applyChallengeResult(currentProgression, displayResult, progressionOptions);
+      const resultProgression = applyChallengeResult(currentProgression, displayResult, progressionOptions);
+      const nextProgression = activeDuel?.type === 'starter'
+        ? updateProgressionSettings(resultProgression, { starterChallengeCompleted: true })
+        : resultProgression;
       progressionRef.current = nextProgression;
       setProgression(nextProgression);
       persistProgression(nextProgression).catch(() => undefined);
@@ -417,6 +446,11 @@ export default function App() {
   }
 
   function goHome() {
+    if (progressionRef.current?.onboarded && !progressionRef.current.settings.starterChallengeCompleted) {
+      setScreen(screens.starter);
+      return;
+    }
+
     setResult(null);
     setActiveDuel(null);
     setScreen(screens.home);
@@ -433,6 +467,7 @@ export default function App() {
       setProgression(null);
       setResult(null);
       setSelectedOpponent(null);
+      setActiveDuel(null);
       setChallenge(makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: 20 }));
       setScreen(screens.welcome);
     } catch (error) {
@@ -489,6 +524,13 @@ export default function App() {
 
       {screen === screens.setup && <ProfileSetupScreen onComplete={completeSetup} />}
 
+      {screen === screens.starter && progression?.onboarded && (
+        <StarterChallengePrompt
+          profile={progression.profile}
+          onStart={startStarterChallenge}
+        />
+      )}
+
       {screen === screens.home && progression?.onboarded && (
         <HomeScreen
           progression={progression}
@@ -542,9 +584,17 @@ export default function App() {
         />
       )}
 
-      {progression?.onboarded && screen !== screens.result && <BottomNav />}
+      {progression?.onboarded && screen !== screens.result && screen !== screens.starter && activeDuel?.type !== 'starter' && <BottomNav />}
     </div>
   );
+}
+
+function getInitialScreen(progression) {
+  if (!progression?.onboarded) {
+    return screens.welcome;
+  }
+
+  return progression.settings.starterChallengeCompleted ? screens.home : screens.starter;
 }
 
 function decorateResultWithDuel(result, duel, role) {

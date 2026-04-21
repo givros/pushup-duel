@@ -36,7 +36,8 @@ export function createProgression({ nickname, maxPushups }) {
     },
     settings: {
       cameraPermission: 'unknown',
-      cameraCheckedAt: null
+      cameraCheckedAt: null,
+      starterChallengeCompleted: false
     },
     createdAt: now,
     updatedAt: now
@@ -216,7 +217,8 @@ export function normalizeProgression(progression) {
     },
     settings: {
       cameraPermission: normalizeCameraPermission(settings.cameraPermission),
-      cameraCheckedAt: typeof settings.cameraCheckedAt === 'string' ? settings.cameraCheckedAt : null
+      cameraCheckedAt: typeof settings.cameraCheckedAt === 'string' ? settings.cameraCheckedAt : null,
+      starterChallengeCompleted: settings.starterChallengeCompleted !== false
     },
     createdAt: progression?.createdAt || new Date().toISOString(),
     updatedAt: progression?.updatedAt || new Date().toISOString()

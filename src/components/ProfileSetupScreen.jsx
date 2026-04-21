@@ -28,7 +28,7 @@ export default function ProfileSetupScreen({ onComplete }) {
       <form className="profile-form" onSubmit={handleSubmit} noValidate>
         <span className="onboarding-kicker">Création du compte</span>
         <h1>Présente-toi</h1>
-        <p>Choisis ton pseudo et ton niveau actuel pour créer ton compte joueur.</p>
+        <p>Choisis ton pseudo et ton niveau actuel. Juste après, tu lanceras un premier défi obligatoire pour calibrer ton profil.</p>
 
         <label htmlFor="nickname">Pseudo</label>
         <input
@@ -61,7 +61,7 @@ export default function ProfileSetupScreen({ onComplete }) {
         )}
 
         <button className="primary-button" type="submit">
-          Valider
+          Créer mon compte
         </button>
       </form>
     </main>
