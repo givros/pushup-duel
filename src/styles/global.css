@@ -4247,3 +4247,491 @@ body {
 .challenge-screen .permission-panel {
   color: #dae2fd;
 }
+
+/* Mobile viewport fit pass */
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+#root,
+.app-shell {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.screen:not(.challenge-screen) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: calc(76px + var(--safe-top));
+  padding-bottom: calc(86px + var(--safe-bottom));
+}
+
+.top-bar {
+  min-height: calc(58px + var(--safe-top));
+  padding-top: calc(9px + var(--safe-top));
+  padding-bottom: 9px;
+}
+
+.bottom-nav {
+  min-height: calc(72px + var(--safe-bottom));
+  padding-top: 7px;
+  padding-bottom: calc(10px + var(--safe-bottom));
+}
+
+.nav-item {
+  min-height: 46px;
+}
+
+.nav-item.featured {
+  min-height: 56px;
+  margin-top: -10px;
+}
+
+.home-screen {
+  grid-template-rows: auto auto auto auto minmax(0, auto);
+  align-content: start;
+  gap: clamp(8px, 1.5dvh, 12px);
+  padding-top: calc(70px + var(--safe-top));
+  padding-bottom: calc(82px + var(--safe-bottom));
+}
+
+.home-duel-card {
+  min-height: clamp(100px, 17dvh, 124px);
+  padding: clamp(12px, 2.2dvh, 16px);
+}
+
+.duel-card-avatar {
+  width: clamp(52px, 11dvw, 66px);
+  height: clamp(52px, 11dvw, 66px);
+}
+
+.duel-card-figure {
+  width: clamp(42px, 10dvw, 54px);
+  height: clamp(42px, 10dvw, 54px);
+}
+
+.home-duel-copy strong {
+  font-size: clamp(1rem, 3.8dvw, 1.28rem);
+}
+
+.home-duel-copy p {
+  margin-top: 4px;
+  font-size: clamp(1.02rem, 4dvw, 1.25rem);
+}
+
+.home-start-panel {
+  min-height: clamp(58px, 10dvh, 70px);
+  padding: clamp(10px, 2dvh, 14px);
+}
+
+.daily-duel-card {
+  min-height: clamp(66px, 11dvh, 82px);
+  padding: clamp(10px, 2dvh, 15px);
+}
+
+.progress-overview {
+  gap: 7px;
+}
+
+.progress-overview article {
+  min-height: clamp(66px, 11dvh, 86px);
+  padding: clamp(9px, 1.8dvh, 13px);
+}
+
+.progress-overview strong {
+  font-size: clamp(1.25rem, 5.5dvw, 2rem);
+}
+
+.mission-card.compact {
+  min-height: 0;
+  margin-top: 0;
+  padding: clamp(11px, 2dvh, 15px);
+}
+
+.mission-card.compact .mission-track {
+  margin-top: 8px;
+}
+
+.mission-card.compact p {
+  margin-top: 6px;
+}
+
+.onboarding-screen,
+.camera-guide-screen,
+.starter-screen,
+.matchmaking-screen,
+.result-screen,
+.async-result-screen {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.onboarding-screen {
+  display: grid;
+  place-items: stretch center;
+  padding: calc(12px + var(--safe-top)) calc(16px + var(--safe-right)) calc(12px + var(--safe-bottom))
+    calc(16px + var(--safe-left));
+}
+
+.onboarding-card,
+.profile-form {
+  width: min(100%, 360px);
+  max-height: calc(100dvh - 24px - var(--safe-top) - var(--safe-bottom));
+}
+
+.welcome-card {
+  grid-template-rows: minmax(108px, 0.85fr) auto auto auto;
+  align-content: stretch;
+  gap: clamp(9px, 1.8dvh, 14px);
+  min-height: 0;
+  height: 100%;
+  padding: clamp(14px, 2.6dvh, 20px);
+}
+
+.welcome-visual {
+  height: auto;
+  min-height: 108px;
+  max-height: 168px;
+}
+
+.welcome-phone {
+  width: clamp(92px, 26dvw, 124px);
+  height: clamp(112px, 25dvh, 152px);
+}
+
+.welcome-rep-count {
+  font-size: clamp(3rem, 12dvw, 4.2rem);
+}
+
+.welcome-copy {
+  gap: clamp(6px, 1.2dvh, 10px);
+}
+
+.welcome-copy h1 {
+  font-size: clamp(2rem, 10dvw, 3.5rem);
+}
+
+.welcome-copy p {
+  font-size: clamp(0.82rem, 3.7dvw, 0.95rem);
+  line-height: 1.32;
+}
+
+.onboarding-insight {
+  min-height: 0;
+  padding: clamp(9px, 1.8dvh, 12px);
+}
+
+.onboarding-insight strong {
+  font-size: clamp(0.74rem, 3.3dvw, 0.82rem);
+  line-height: 1.25;
+}
+
+.onboarding-step-footer {
+  gap: clamp(8px, 1.7dvh, 12px);
+}
+
+.step-dots span {
+  width: 7px;
+  height: 7px;
+}
+
+.step-dots span.active {
+  width: 24px;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.launch-button {
+  min-height: 46px;
+}
+
+.profile-form {
+  align-self: center;
+  gap: clamp(9px, 1.7dvh, 13px);
+  padding: clamp(16px, 3dvh, 22px);
+}
+
+.profile-form h1 {
+  margin-bottom: 2px;
+  font-size: clamp(1.65rem, 8dvw, 2.55rem);
+}
+
+.profile-form p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.32;
+}
+
+.profile-form input {
+  min-height: 46px;
+}
+
+.camera-guide-screen {
+  align-content: stretch;
+  gap: clamp(10px, 2dvh, 16px);
+  padding-top: calc(18px + var(--safe-top));
+  padding-bottom: calc(18px + var(--safe-bottom));
+}
+
+.camera-guide-hero {
+  gap: 7px;
+}
+
+.camera-guide-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.camera-guide-hero h1 {
+  font-size: clamp(2.1rem, 10dvw, 3.5rem);
+}
+
+.camera-guide-hero p {
+  line-height: 1.32;
+}
+
+.camera-guide-steps {
+  gap: 8px;
+}
+
+.camera-guide-steps article {
+  padding: clamp(10px, 2dvh, 14px);
+}
+
+.camera-guide-action {
+  margin-top: auto;
+}
+
+.starter-screen {
+  padding: calc(12px + var(--safe-top)) calc(16px + var(--safe-right)) calc(12px + var(--safe-bottom))
+    calc(16px + var(--safe-left));
+}
+
+.starter-popup {
+  max-height: calc(100dvh - 24px - var(--safe-top) - var(--safe-bottom));
+  gap: clamp(10px, 1.8dvh, 15px);
+  padding: clamp(14px, 2.4dvh, 20px);
+}
+
+.starter-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.starter-copy {
+  gap: 6px;
+}
+
+.starter-copy h1 {
+  font-size: clamp(1.95rem, 9dvw, 3.2rem);
+}
+
+.starter-copy p {
+  font-size: 0.84rem;
+  line-height: 1.32;
+}
+
+.starter-challenger {
+  padding: 10px;
+}
+
+.starter-challenger .opponent-avatar {
+  width: 50px;
+  height: 50px;
+}
+
+.starter-rules {
+  gap: 7px;
+}
+
+.starter-rules article {
+  min-height: 0;
+  padding: 9px 10px;
+}
+
+.matchmaking-screen,
+.opponent-search-screen {
+  padding-top: calc(70px + var(--safe-top));
+  padding-bottom: calc(18px + var(--safe-bottom));
+}
+
+.opponent-search {
+  min-height: 0;
+  height: 100%;
+  align-content: space-between;
+}
+
+.result-screen,
+.async-result-screen {
+  display: grid;
+  align-content: center;
+  gap: clamp(10px, 1.8dvh, 16px);
+  padding-top: calc(16px + var(--safe-top));
+  padding-bottom: calc(16px + var(--safe-bottom));
+}
+
+.async-result-help {
+  gap: 8px;
+}
+
+.async-result-help article {
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.challenges-screen,
+.stats-screen,
+.settings-screen {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(92px + var(--safe-bottom));
+  scrollbar-width: none;
+}
+
+.challenges-screen::-webkit-scrollbar,
+.stats-screen::-webkit-scrollbar,
+.settings-screen::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-height: 700px) {
+  .home-screen {
+    gap: 8px;
+  }
+
+  .home-duel-card {
+    min-height: 96px;
+  }
+
+  .daily-duel-card {
+    min-height: 60px;
+  }
+
+  .daily-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .progress-overview article {
+    min-height: 60px;
+  }
+
+  .mission-card.compact {
+    display: none;
+  }
+
+  .welcome-visual {
+    max-height: 136px;
+  }
+
+  .welcome-copy h1 {
+    font-size: clamp(1.7rem, 8.5dvw, 2.6rem);
+  }
+
+  .starter-rules {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .starter-rules article {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
+
+@media (max-height: 610px) {
+  .top-bar {
+    min-height: calc(52px + var(--safe-top));
+  }
+
+  .bottom-nav {
+    min-height: calc(64px + var(--safe-bottom));
+  }
+
+  .nav-item {
+    min-height: 40px;
+  }
+
+  .nav-item.featured {
+    min-height: 48px;
+    margin-top: -7px;
+  }
+
+  .nav-item span:last-child {
+    font-size: 0.46rem;
+  }
+
+  .home-screen {
+    padding-top: calc(62px + var(--safe-top));
+    padding-bottom: calc(68px + var(--safe-bottom));
+  }
+
+  .home-duel-card {
+    min-height: 86px;
+  }
+
+  .duel-card-figure {
+    display: none;
+  }
+
+  .home-start-panel {
+    min-height: 52px;
+  }
+
+  .progress-overview article {
+    min-height: 54px;
+    padding: 8px;
+  }
+
+  .welcome-card {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .welcome-visual {
+    min-height: 86px;
+    max-height: 104px;
+  }
+
+  .welcome-phone {
+    height: 92px;
+  }
+
+  .welcome-signal,
+  .welcome-camera-line {
+    display: none;
+  }
+
+  .welcome-rep-count {
+    font-size: 2.65rem;
+  }
+
+  .onboarding-insight {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-insight .app-icon {
+    display: none;
+  }
+
+  .camera-guide-steps span {
+    display: none;
+  }
+}

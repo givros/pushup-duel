@@ -11,7 +11,7 @@ export default function StatsScreen({ progression, onOpenSettings }) {
   const draws = history.filter((entry) => entry.outcome === RESULT_OUTCOMES.draw).length;
   const pending = history.filter((entry) => entry.outcome === RESULT_OUTCOMES.pending).length;
   const bestFixed = stats.bestFixedTimeMs === null
-    ? '—'
+    ? '-'
     : `${(stats.bestFixedTimeMs / 1000).toFixed(1)}s`;
 
   return (

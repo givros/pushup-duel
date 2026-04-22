@@ -72,7 +72,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
         <div>
           <span className="settings-kicker">Player account</span>
           <h2>{profile.nickname}</h2>
-          <p>Level {profile.level} • {profile.maxPushups} declared max push-ups</p>
+          <p>Level {profile.level} - {profile.maxPushups} declared max push-ups</p>
         </div>
       </section>
 

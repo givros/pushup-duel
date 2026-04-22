@@ -75,7 +75,7 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
                 : 'Time is up, duel resolution is in progress.'}
             </p>
           ) : (
-            opponent && <p>{opponent.stat} • {opponent.rank}</p>
+            opponent && <p>{opponent.stat} - {opponent.rank}</p>
           )}
         </div>
       </section>

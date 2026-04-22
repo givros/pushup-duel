@@ -22,7 +22,7 @@ export default function HistoryList({ history = [], limit = null, emptyLabel = '
             <div className="history-copy">
               <strong>{state.label}</strong>
               <span>
-                {opponentLabel(entry)} • {modeLabel(entry)} • {formatRelativeDate(entry.completedAt)}
+                {opponentLabel(entry)} - {modeLabel(entry)} - {formatRelativeDate(entry.completedAt)}
               </span>
               {hasOpponentScore(entry) && (
                 <small>

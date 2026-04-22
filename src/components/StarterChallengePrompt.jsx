@@ -34,7 +34,7 @@ export default function StarterChallengePrompt({ profile, onStart }) {
           <div>
             <span>Opponent</span>
             <strong>{challenger.pseudo}</strong>
-            <p>{challenger.stat} • {challenger.rank}</p>
+            <p>{challenger.stat} - {challenger.rank}</p>
           </div>
         </section>
 

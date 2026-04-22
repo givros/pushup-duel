@@ -46,7 +46,7 @@ export default function HomeScreen({
             {lastDuel ? outcomeLabel(lastDuel.outcome) : 'Ready'}
           </strong>
           <p>{lastDuel ? scoreLine(lastDuel) : 'No duel played yet'}</p>
-          <small>{lastDuel?.opponentName ? `vs ${lastDuel.opponentName}` : 'Start your first duel'} {lastDuel ? '· recently' : ''}</small>
+          <small>{lastDuel?.opponentName ? `vs ${lastDuel.opponentName}` : 'Start your first duel'} {lastDuel ? '- recently' : ''}</small>
         </div>
         <div className="duel-card-figure" aria-hidden="true">
           <Icon name="fitness_center" className="filled" />
@@ -150,7 +150,7 @@ function outcomeLabel(outcome) {
 }
 
 function scoreLine(entry) {
-  const opponentScore = typeof entry.opponentPushups === 'number' ? entry.opponentPushups : '—';
+  const opponentScore = typeof entry.opponentPushups === 'number' ? entry.opponentPushups : '-';
 
   return `${entry.pushups} - ${opponentScore}`;
 }

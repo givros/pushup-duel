@@ -18,7 +18,7 @@ export default function TopBar({ compact = false, progression, onProfileClick })
           </div>
         </button>
         <div className="player-meta">
-          <span>{profile.nickname} • Level {profile.level}</span>
+          <span>{profile.nickname} - Level {profile.level}</span>
           {!compact && (
             <div className="xp-track" aria-hidden="true">
               <div style={{ width: `${levelProgress}%` }} />
