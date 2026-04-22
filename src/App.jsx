@@ -107,10 +107,7 @@ export default function App() {
         }
 
         setProgression(savedProgression);
-        setChallenge(makeChallenge({
-          mode: CHALLENGE_MODES.maxReps,
-          goal: savedProgression?.profile?.maxPushups || DEFAULT_PUSHUP_GOAL
-        }));
+        setChallenge(makeChallengeFromProgression(savedProgression));
         setScreen(getInitialScreen(savedProgression));
         setBootStatus('ready');
       } catch (error) {
@@ -312,6 +309,25 @@ export default function App() {
     persistProgression(nextProgression).catch(() => undefined);
   }, [persistProgression]);
 
+  const updateAppSettings = useCallback((settings) => {
+    const currentProgression = progressionRef.current;
+
+    if (!currentProgression?.onboarded) {
+      return;
+    }
+
+    const nextProgression = updateProgressionSettings(currentProgression, settings);
+    progressionRef.current = nextProgression;
+    setProgression(nextProgression);
+    setChallenge(makeChallenge({
+      mode: nextProgression.settings.challengeMode,
+      goal: nextProgression.settings.challengeMode === CHALLENGE_MODES.fixedGoal
+        ? nextProgression.settings.fixedGoal
+        : nextProgression.profile.maxPushups
+    }));
+    persistProgression(nextProgression).catch(() => undefined);
+  }, [persistProgression]);
+
   async function lookupNickname(nickname) {
     setSyncError('');
 
@@ -328,10 +344,7 @@ export default function App() {
       const recoveredProgression = setupResult.progression;
       progressionRef.current = recoveredProgression;
       setProgression(recoveredProgression);
-      setChallenge(makeChallenge({
-        mode: CHALLENGE_MODES.maxReps,
-        goal: recoveredProgression.profile.maxPushups || DEFAULT_PUSHUP_GOAL
-      }));
+      setChallenge(makeChallengeFromProgression(recoveredProgression));
       setScreen(getInitialScreen(recoveredProgression));
       return;
     }
@@ -340,10 +353,7 @@ export default function App() {
 
     try {
       const savedProgression = await persistProgression(nextProgression);
-      setChallenge(makeChallenge({
-        mode: CHALLENGE_MODES.maxReps,
-        goal: savedProgression.profile.maxPushups || DEFAULT_PUSHUP_GOAL
-      }));
+      setChallenge(makeChallengeFromProgression(savedProgression));
       setScreen(screens.starter);
     } catch {
       setScreen(screens.setup);
@@ -665,11 +675,12 @@ export default function App() {
       {screen === screens.home && progression?.onboarded && (
         <HomeScreen
           progression={progression}
-          defaultGoal={challenge.goal}
+          incomingChallenges={incomingChallenges}
           starterChallengePending={!progression.settings.starterChallengeCompleted}
           onStart={startChallenge}
           onStartStarterChallenge={openStarterCameraGuide}
           onOpenSettings={openSettings}
+          onOpenChallenges={() => setScreen(screens.challenges)}
         />
       )}
 
@@ -730,6 +741,7 @@ export default function App() {
           progression={progression}
           onBack={goHome}
           onCameraPermissionChange={updateCameraPermission}
+          onUpdateSettings={updateAppSettings}
           onDeleteAccount={handleDeleteAccount}
         />
       )}
@@ -747,6 +759,21 @@ function getInitialScreen(progression) {
   }
 
   return progression.settings.starterChallengeCompleted ? screens.home : screens.starter;
+}
+
+function makeChallengeFromProgression(progression) {
+  if (!progression?.onboarded) {
+    return makeChallenge({ mode: CHALLENGE_MODES.maxReps, goal: DEFAULT_PUSHUP_GOAL });
+  }
+
+  const mode = progression.settings.challengeMode || CHALLENGE_MODES.maxReps;
+
+  return makeChallenge({
+    mode,
+    goal: mode === CHALLENGE_MODES.fixedGoal
+      ? progression.settings.fixedGoal
+      : progression.profile.maxPushups || DEFAULT_PUSHUP_GOAL
+  });
 }
 
 function getActiveNav(screen) {

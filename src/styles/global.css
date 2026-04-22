@@ -3718,3 +3718,532 @@ button:disabled {
     display: none;
   }
 }
+
+/* Light gamified redesign */
+body {
+  background: #f5f7fb;
+}
+
+.app-shell {
+  color: #102033;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, #f7fbff 0%, #eef4f9 58%, #f7f8fb 100%);
+}
+
+.screen:not(.challenge-screen) {
+  color: #102033;
+}
+
+.top-bar {
+  background: rgba(247, 251, 255, 0.82);
+  box-shadow: 0 10px 28px rgba(18, 35, 55, 0.08);
+}
+
+.player-meta span,
+.coin-pill strong {
+  color: #102033;
+}
+
+.coin-pill {
+  color: #0a9db3;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(18, 35, 55, 0.07);
+}
+
+.avatar {
+  background:
+    radial-gradient(circle at 50% 32%, #ffffff 0 10%, transparent 11%),
+    linear-gradient(145deg, #d8f8ff 0%, #ffffff 48%, #dfe8f5 100%);
+  border-color: rgba(0, 182, 205, 0.18);
+  box-shadow: 0 8px 18px rgba(0, 182, 205, 0.12);
+}
+
+.bottom-nav {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 -10px 28px rgba(18, 35, 55, 0.1);
+}
+
+.nav-item {
+  color: #8b98a8;
+}
+
+.nav-item.active {
+  color: #08b4ca;
+  background: rgba(0, 194, 219, 0.09);
+}
+
+.nav-item.featured {
+  color: #ffffff;
+  background: linear-gradient(135deg, #01d6ef, #0fb981);
+  border: 0;
+  box-shadow: 0 14px 30px rgba(0, 194, 219, 0.28);
+}
+
+.nav-item.featured.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #02cfe8, #12b886);
+}
+
+.home-screen {
+  display: grid;
+  gap: 14px;
+  padding-top: calc(82px + var(--safe-top));
+}
+
+.home-duel-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 132px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(255, 72, 92, 0.18), transparent 35%),
+    radial-gradient(circle at 88% 40%, rgba(0, 229, 255, 0.2), transparent 28%),
+    linear-gradient(145deg, #101e34, #071425);
+  box-shadow: 0 18px 36px rgba(8, 20, 36, 0.18);
+}
+
+.home-duel-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 18px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.duel-card-avatar,
+.duel-card-figure {
+  position: relative;
+  z-index: 1;
+}
+
+.duel-card-avatar {
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 72, 92, 0.46);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 50% 26%, #dfe8f5 0 13%, transparent 14%),
+    linear-gradient(160deg, #22324e, #0a1426);
+}
+
+.duel-card-avatar span {
+  transform: translateY(17px);
+  color: #21d7ef;
+  font-size: 1.8rem;
+  font-weight: 950;
+}
+
+.home-duel-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.home-duel-copy span,
+.home-duel-copy small {
+  display: block;
+  color: rgba(232, 244, 255, 0.72);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.home-duel-copy strong {
+  display: block;
+  margin-top: 3px;
+  color: #ff5869;
+  font-size: 1.28rem;
+  font-style: italic;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.home-duel-copy strong.duel-win {
+  color: #22d3a6;
+}
+
+.home-duel-copy strong.duel-ready {
+  color: #21d7ef;
+}
+
+.home-duel-copy p {
+  margin: 6px 0 3px;
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.duel-card-figure {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: rgba(0, 229, 255, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.home-start-panel,
+.daily-duel-card,
+.pending-duel-card,
+.mission-card,
+.progress-overview article,
+.settings-card,
+.stats-highlight article,
+.challenge-card,
+.challenge-empty,
+.history-item,
+.result-focus,
+.result-summary article,
+.sent-card,
+.async-result-help article,
+.profile-form,
+.onboarding-card {
+  border: 1px solid rgba(21, 45, 75, 0.07);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 30px rgba(18, 35, 55, 0.08);
+}
+
+.home-start-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+.home-start-panel span,
+.daily-duel-card span,
+.pending-duel-card span,
+.progress-overview span,
+.mission-head span,
+.mission-card p,
+.settings-header span,
+.settings-kicker,
+.settings-grid span,
+.stats-header span,
+.section-title h2,
+.challenge-copy span,
+.history-copy span,
+.result-focus span,
+.result-summary span,
+.sent-card span {
+  color: #7d8b9d;
+}
+
+.home-start-panel strong {
+  display: block;
+  margin-top: 3px;
+  color: #102033;
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.launch-button,
+.primary-button {
+  color: #ffffff;
+  background: linear-gradient(135deg, #02cfe8, #13bd88);
+  box-shadow: 0 12px 26px rgba(0, 194, 219, 0.28);
+}
+
+.secondary-button {
+  color: #102033;
+  background: #edf4f8;
+}
+
+.daily-duel-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 42px;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+}
+
+.daily-duel-card strong {
+  display: block;
+  margin-top: 3px;
+  color: #102033;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.daily-duel-card small {
+  color: #587086;
+  font-weight: 900;
+}
+
+.daily-track {
+  grid-column: 1 / 3;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dce8ee;
+}
+
+.daily-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #16d9cc, #69df8f);
+}
+
+.daily-badge {
+  grid-row: 1 / 3;
+  grid-column: 3;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ffcc45, #ff9f2d);
+  box-shadow: 0 10px 22px rgba(255, 185, 45, 0.28);
+}
+
+.progress-overview {
+  margin-top: 0;
+}
+
+.progress-overview article {
+  min-height: 88px;
+}
+
+.progress-overview strong,
+.settings-grid strong,
+.stats-highlight strong,
+.history-score strong,
+.result-focus strong {
+  color: #102033;
+}
+
+.progress-overview small,
+.mission-head small,
+.stats-highlight small,
+.history-score strong {
+  color: #08b4ca;
+}
+
+.mission-card {
+  margin-top: 0;
+}
+
+.mission-head strong,
+.settings-card h2,
+.settings-header h1,
+.stats-header h1,
+.challenges-header h1,
+.history-copy strong,
+.challenge-copy strong,
+.sent-card h2 {
+  color: #102033;
+}
+
+.mission-track,
+.xp-track,
+.thin-track,
+.sync-track {
+  background: #dce8ee;
+}
+
+.mission-track div,
+.xp-track div,
+.thin-track div,
+.sync-track div {
+  background: linear-gradient(90deg, #02cfe8, #14c989);
+  box-shadow: none;
+}
+
+.pending-duel-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+.pending-duel-card p,
+.challenge-copy p {
+  color: #08a9bf;
+}
+
+.challenge-icon,
+.history-icon,
+.stats-highlight .app-icon,
+.camera-guide-steps .app-icon,
+.async-result-help .app-icon {
+  color: #02cfe8;
+  background: rgba(0, 207, 232, 0.11);
+}
+
+.challenges-screen,
+.stats-screen,
+.settings-screen {
+  gap: 14px;
+}
+
+.challenges-header,
+.stats-header {
+  align-items: center;
+}
+
+.challenge-inbox,
+.home-history,
+.challenge-history-section {
+  margin-top: 0;
+}
+
+.settings-grid article {
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(18, 35, 55, 0.07);
+}
+
+.duel-settings-form {
+  display: grid;
+  gap: 12px;
+}
+
+.preference-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.preference-selector label {
+  position: relative;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dce8ee;
+  border-radius: 14px;
+  color: #5c6f82;
+  background: #f7fbff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preference-selector label.selected {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #02cfe8, #13bd88);
+}
+
+.preference-selector input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.settings-input-row {
+  display: grid;
+  gap: 7px;
+  color: #7d8b9d;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.settings-input-row input,
+.profile-form input {
+  border: 1px solid #dce8ee;
+  color: #102033;
+  background: #f7fbff;
+}
+
+.permission-pill {
+  color: #5c6f82;
+  background: #edf4f8;
+}
+
+.permission-pill.granted {
+  color: #06372d;
+  background: #9df3d7;
+}
+
+.permission-pill.denied,
+.danger-button {
+  color: #690005;
+  background: #ffcdc8;
+}
+
+.result-screen,
+.async-result-screen {
+  background: transparent;
+}
+
+.victory-hero.compact-result h1,
+.victory-hero h1 {
+  color: #02cfe8;
+}
+
+.victory-hero.defeat-result h1 {
+  color: #ff5869;
+}
+
+.victory-hero.pending-result h1 {
+  color: #ffb72f;
+}
+
+.sent-card p,
+.history-empty,
+.settings-note,
+.danger-card p,
+.profile-settings-card p,
+.camera-guide-hero p {
+  color: #65778a;
+}
+
+.onboarding-screen,
+.camera-guide-screen,
+.starter-screen {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(0, 207, 232, 0.18), transparent 30%),
+    linear-gradient(180deg, #f7fbff, #eef4f9);
+}
+
+.onboarding-card h1,
+.profile-form h1,
+.camera-guide-hero h1,
+.starter-copy h1 {
+  color: #102033;
+}
+
+.onboarding-card p,
+.profile-form p,
+.onboarding-insight strong,
+.camera-guide-steps span {
+  color: #65778a;
+}
+
+.camera-guide-steps article,
+.starter-popup,
+.starter-challenger,
+.starter-rules article {
+  border: 1px solid rgba(21, 45, 75, 0.07);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 30px rgba(18, 35, 55, 0.08);
+}
+
+.challenge-screen .duel-hud,
+.challenge-screen .countdown-overlay,
+.challenge-screen .permission-panel {
+  color: #dae2fd;
+}

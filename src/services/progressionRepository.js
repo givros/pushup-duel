@@ -197,12 +197,15 @@ async function upsertSettings(supabase, userId, progression) {
     { onConflict: 'user_id' }
   );
 
-  if (!isStarterChallengeColumnMissing(result.error)) {
+  if (!isSettingsSchemaCacheMissing(result.error)) {
     return result;
   }
 
   return supabase.from(TABLES.settings).upsert(
-    settingsRowFromProgression(userId, progression, { includeStarterChallenge: false }),
+    settingsRowFromProgression(userId, progression, {
+      includeStarterChallenge: !result.error?.message?.includes('starter_challenge_completed'),
+      includeChallengePreferences: false
+    }),
     { onConflict: 'user_id' }
   );
 }
@@ -240,7 +243,9 @@ function progressionFromRows({ account, settings, stats, history }) {
     settings: {
       cameraPermission: settings?.camera_permission,
       cameraCheckedAt: settings?.camera_checked_at,
-      starterChallengeCompleted: settings?.starter_challenge_completed
+      starterChallengeCompleted: settings?.starter_challenge_completed,
+      challengeMode: settings?.challenge_mode,
+      fixedGoal: settings?.fixed_goal
     },
     stats: {
       sessions: stats?.sessions,
@@ -281,6 +286,11 @@ function settingsRowFromProgression(userId, progression, options = {}) {
 
   if (options.includeStarterChallenge !== false) {
     row.starter_challenge_completed = progression.settings.starterChallengeCompleted;
+  }
+
+  if (options.includeChallengePreferences !== false) {
+    row.challenge_mode = progression.settings.challengeMode;
+    row.fixed_goal = progression.settings.fixedGoal;
   }
 
   return row;
@@ -372,12 +382,14 @@ function makeRepositoryError(message, cause) {
   return error;
 }
 
-function isStarterChallengeColumnMissing(error) {
+function isSettingsSchemaCacheMissing(error) {
   return Boolean(
     error &&
       (
         error.code === 'PGRST204' ||
         error.message?.includes('starter_challenge_completed') ||
+        error.message?.includes('challenge_mode') ||
+        error.message?.includes('fixed_goal') ||
         error.message?.includes('schema cache')
       )
   );

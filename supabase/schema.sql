@@ -19,12 +19,30 @@ create table if not exists public.player_settings (
   camera_permission text not null default 'unknown' check (camera_permission in ('unknown', 'granted', 'denied')),
   camera_checked_at timestamptz,
   starter_challenge_completed boolean not null default true,
+  challenge_mode text not null default 'max_reps' check (challenge_mode in ('max_reps', 'fixed_goal')),
+  fixed_goal integer not null default 15 check (fixed_goal between 1 and 999),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 alter table public.player_settings
 add column if not exists starter_challenge_completed boolean not null default true;
+
+alter table public.player_settings
+add column if not exists challenge_mode text not null default 'max_reps';
+
+alter table public.player_settings
+add column if not exists fixed_goal integer not null default 15;
+
+alter table public.player_settings drop constraint if exists player_settings_challenge_mode_check;
+alter table public.player_settings
+add constraint player_settings_challenge_mode_check
+check (challenge_mode in ('max_reps', 'fixed_goal'));
+
+alter table public.player_settings drop constraint if exists player_settings_fixed_goal_check;
+alter table public.player_settings
+add constraint player_settings_fixed_goal_check
+check (fixed_goal between 1 and 999);
 
 create table if not exists public.player_stats (
   user_id uuid primary key references public.player_accounts(user_id) on delete cascade,

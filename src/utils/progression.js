@@ -13,6 +13,7 @@ export const RESULT_OUTCOMES = {
 };
 
 export const ONE_MINUTE_MS = 60_000;
+export const DEFAULT_FIXED_GOAL = 15;
 
 export function createProgression({ nickname, maxPushups }) {
   const now = new Date().toISOString();
@@ -39,7 +40,9 @@ export function createProgression({ nickname, maxPushups }) {
     settings: {
       cameraPermission: 'unknown',
       cameraCheckedAt: null,
-      starterChallengeCompleted: false
+      starterChallengeCompleted: false,
+      challengeMode: CHALLENGE_MODES.maxReps,
+      fixedGoal: DEFAULT_FIXED_GOAL
     },
     createdAt: now,
     updatedAt: now
@@ -222,7 +225,9 @@ export function normalizeProgression(progression) {
     settings: {
       cameraPermission: normalizeCameraPermission(settings.cameraPermission),
       cameraCheckedAt: typeof settings.cameraCheckedAt === 'string' ? settings.cameraCheckedAt : null,
-      starterChallengeCompleted: settings.starterChallengeCompleted !== false
+      starterChallengeCompleted: settings.starterChallengeCompleted !== false,
+      challengeMode: normalizeChallengeMode(settings.challengeMode),
+      fixedGoal: clampInteger(settings.fixedGoal, 1, 999, DEFAULT_FIXED_GOAL)
     },
     createdAt: progression?.createdAt || new Date().toISOString(),
     updatedAt: progression?.updatedAt || new Date().toISOString()
@@ -309,6 +314,10 @@ function normalizeCameraPermission(permission) {
   }
 
   return 'unknown';
+}
+
+function normalizeChallengeMode(mode) {
+  return mode === CHALLENGE_MODES.fixedGoal ? CHALLENGE_MODES.fixedGoal : CHALLENGE_MODES.maxReps;
 }
 
 function sanitizeNickname(value) {
