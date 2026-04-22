@@ -50,12 +50,12 @@ export function analyzePushupPose(landmarks, config = {}, preferredSideName = nu
   const options = { ...PUSHUP_DETECTOR_DEFAULTS, ...config };
 
   if (!Array.isArray(landmarks) || landmarks.length === 0) {
-    return invalidFrame('mal cadré', 0);
+    return invalidFrame('bad framing', 0);
   }
 
   const side = chooseBestSide(landmarks, preferredSideName, options.sideSwitchTolerance);
   if (!side) {
-    return invalidFrame('mal cadré', 0);
+    return invalidFrame('bad framing', 0);
   }
 
   const shoulder = landmarks[side.shoulder];
@@ -68,7 +68,7 @@ export function analyzePushupPose(landmarks, config = {}, preferredSideName = nu
   const torsoLength = distance2D(shoulder, hip);
 
   if (confidence < options.minConfidence || !framed || torsoLength < options.minTorsoLength) {
-    return invalidFrame('mal cadré', confidence, side.name, {
+    return invalidFrame('bad framing', confidence, side.name, {
       torsoLength,
       framed
     });
@@ -79,7 +79,7 @@ export function analyzePushupPose(landmarks, config = {}, preferredSideName = nu
 
   return {
     isValid: true,
-    status: 'Prêt',
+    status: 'Ready',
     side: side.name,
     confidence: clamp(confidence),
     elbowAngle,
@@ -122,25 +122,25 @@ export class PushupDetector {
     const frame = analyzePushupPose(landmarks, this.config);
 
     if (!frame.isValid) {
-      return this.output(frame, 'mal cadré');
+      return this.output(frame, 'bad framing');
     }
 
     if (frame.isLow) {
-      return this.output(frame, 'Monte');
+      return this.output(frame, 'Go up');
     }
 
     if (frame.isHigh) {
-      return this.output(frame, 'Prêt');
+      return this.output(frame, 'Ready');
     }
 
-    return this.output(frame, 'Descends');
+    return this.output(frame, 'Go down');
   }
 
   update(landmarks, timestampMs = performance.now()) {
     const frame = analyzePushupPose(landmarks, this.config, this.side);
 
     if (!frame.isValid) {
-      return this.output(frame, 'mal cadré');
+      return this.output(frame, 'bad framing');
     }
 
     this.side = frame.side;
@@ -162,7 +162,7 @@ export class PushupDetector {
         this.lastTransitionMs = timestampMs;
       }
 
-      return this.output(smoothedFrame, 'Prêt');
+      return this.output(smoothedFrame, 'Ready');
     }
 
     if (this.state === 'top') {
@@ -176,10 +176,10 @@ export class PushupDetector {
       if (bottomCandidate && stable && timestampMs - this.lastTransitionMs >= this.config.minTransitionMs) {
         this.state = 'bottom';
         this.lastTransitionMs = timestampMs;
-        return this.output(smoothedFrame, 'Monte');
+        return this.output(smoothedFrame, 'Go up');
       }
 
-      return this.output(smoothedFrame, 'Descends');
+      return this.output(smoothedFrame, 'Go down');
     }
 
     if (this.state === 'bottom') {
@@ -211,13 +211,13 @@ export class PushupDetector {
           return this.output(smoothedFrame, 'OK');
         }
 
-        return this.output(smoothedFrame, 'Descends');
+        return this.output(smoothedFrame, 'Go down');
       }
 
-      return this.output(smoothedFrame, 'Monte');
+      return this.output(smoothedFrame, 'Go up');
     }
 
-    return this.output(smoothedFrame, 'Prêt');
+    return this.output(smoothedFrame, 'Ready');
   }
 
   smoothFrame(frame) {

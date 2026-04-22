@@ -25,7 +25,7 @@ export async function listOpponentCandidates() {
     .limit(24);
 
   if (error) {
-    console.error('Impossible de charger les adversaires.', error);
+    console.error('Unable to load opponents.', error);
     return [];
   }
 
@@ -53,7 +53,7 @@ export async function listIncomingChallenges() {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de charger tes défis reçus.', error);
+    throw makeDuelError('Unable to load your received duels.', error);
   }
 
   return (data || []).map((row) => challengeFromRow(row, session.user.id));
@@ -80,7 +80,7 @@ export async function listOutgoingChallenges() {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de charger tes défis envoyés.', error);
+    throw makeDuelError('Unable to load your sent duels.', error);
   }
 
   return (data || []).map((row) => challengeFromRow(row, session.user.id));
@@ -106,7 +106,7 @@ export async function expireStaleDuelChallenges() {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de vérifier les défis expirés.', error);
+    throw makeDuelError('Unable to check expired duels.', error);
   }
 
   const expiredRows = (data || []).filter((row) => isDuelCreatedAtExpired(row.created_at));
@@ -144,7 +144,7 @@ export async function listCompletedDuelChallenges() {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de synchroniser tes duels.', error);
+    throw makeDuelError('Unable to sync your duels.', error);
   }
 
   return (data || []).map((row) => challengeFromRow(row, session.user.id));
@@ -179,7 +179,7 @@ export async function getDuelChallenge(duelId) {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de charger le duel.', error);
+    throw makeDuelError('Unable to load the duel.', error);
   }
 
   return data ? challengeFromRow(data, session.user.id) : null;
@@ -221,7 +221,7 @@ export async function createOutgoingChallenge({ challenge, result, opponent, pro
   }
 
   if (error) {
-    throw makeDuelError('Impossible d’envoyer le défi.', error);
+    throw makeDuelError('Unable to send the duel.', error);
   }
 
   return challengeFromRow(data, session.user.id);
@@ -266,7 +266,7 @@ export async function completeIncomingChallenge({ duel, result, progression }) {
   }
 
   if (error) {
-    throw makeDuelError('Impossible d’envoyer ta réponse.', error);
+    throw makeDuelError('Unable to send your answer.', error);
   }
 
   return challengeFromRow(data, session.user.id);
@@ -292,7 +292,7 @@ export async function declineIncomingChallenge(duelId) {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de refuser le défi.', error);
+    throw makeDuelError('Unable to decline the duel.', error);
   }
 }
 
@@ -308,7 +308,7 @@ async function expireDuelByIdIfNeeded(supabase, duelId, userId) {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de vérifier ce défi.', error);
+    throw makeDuelError('Unable to check this duel.', error);
   }
 
   if (!data || data.status !== 'pending' || !isDuelCreatedAtExpired(data.created_at)) {
@@ -339,7 +339,7 @@ async function expireDuelRow(supabase, row, userId) {
   }
 
   if (error) {
-    throw makeDuelError('Impossible de clore un défi expiré.', error);
+    throw makeDuelError('Unable to close an expired duel.', error);
   }
 
   return data ? challengeFromRow(data, userId) : null;
@@ -349,7 +349,7 @@ async function getCurrentSession(supabase) {
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
-    throw makeDuelError('Session indisponible.', error);
+    throw makeDuelError('Session unavailable.', error);
   }
 
   return data.session || null;
@@ -365,7 +365,7 @@ function challengeFromRow(row, userId) {
   const opponentResult = role === 'challenger'
     ? makeResultFromRow(row, 'receiver')
     : makeResultFromRow(row, 'challenger');
-  const opponentName = opponentSnapshot.nickname || 'Adversaire';
+  const opponentName = opponentSnapshot.nickname || 'Opponent';
   const expiresAt = getDuelExpiresAt(row.created_at);
 
   return {
@@ -383,7 +383,7 @@ function challengeFromRow(row, userId) {
       id: role === 'challenger' ? row.receiver_id : row.challenger_id,
       userId: role === 'challenger' ? row.receiver_id : row.challenger_id,
       pseudo: opponentName,
-      stat: opponentResult ? `${opponentResult.pushups} pompes` : snapshotStat(opponentSnapshot),
+      stat: opponentResult ? `${opponentResult.pushups} push-ups` : snapshotStat(opponentSnapshot),
       rank: challengeTitle(challenge)
     }
   };
@@ -409,14 +409,14 @@ function opponentFromAccount(account) {
     pseudo: account.nickname,
     maxPushups: account.max_pushups,
     level: account.level,
-    stat: `Max déclaré : ${account.max_pushups}`,
-    rank: `Niveau ${account.level}`
+    stat: `Declared max: ${account.max_pushups}`,
+    rank: `Level ${account.level}`
   };
 }
 
 function playerSnapshotFromProgression(progression) {
   return {
-    nickname: progression?.profile?.nickname || 'Joueur',
+    nickname: progression?.profile?.nickname || 'Player',
     maxPushups: progression?.profile?.maxPushups || 0,
     level: progression?.profile?.level || 1
   };
@@ -424,7 +424,7 @@ function playerSnapshotFromProgression(progression) {
 
 function playerSnapshotFromOpponent(opponent) {
   return {
-    nickname: opponent?.pseudo || 'Adversaire',
+    nickname: opponent?.pseudo || 'Opponent',
     maxPushups: opponent?.maxPushups || 0,
     level: opponent?.level || 1
   };
@@ -432,14 +432,14 @@ function playerSnapshotFromOpponent(opponent) {
 
 function snapshotStat(snapshot) {
   if (snapshot?.maxPushups) {
-    return `Max déclaré : ${snapshot.maxPushups}`;
+    return `Declared max: ${snapshot.maxPushups}`;
   }
 
   if (snapshot?.level) {
-    return `Niveau ${snapshot.level}`;
+    return `Level ${snapshot.level}`;
   }
 
-  return 'Score en attente';
+  return 'Score pending';
 }
 
 function isMissingChallengeTable(error) {

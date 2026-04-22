@@ -34,7 +34,7 @@ export function useCamera() {
 
   const start = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      const nextError = 'getUserMedia indisponible sur ce navigateur.';
+      const nextError = 'getUserMedia is unavailable in this browser.';
       setStatus('error');
       setError(nextError);
       throw new Error(nextError);
@@ -66,10 +66,10 @@ export function useCamera() {
     } catch (err) {
       const nextError =
         err instanceof Error && err.name === 'NotAllowedError'
-          ? 'Permission caméra refusée.'
+          ? 'Camera permission denied.'
           : err instanceof Error
             ? err.message
-            : 'Impossible de démarrer la caméra.';
+            : 'Unable to start the camera.';
       setStatus('error');
       setError(nextError);
       throw err;
@@ -93,7 +93,7 @@ export function useCamera() {
 
 async function playVideo(video, stream) {
   if (!streamIsLive(stream)) {
-    throw new Error('Flux caméra interrompu.');
+    throw new Error('Camera stream interrupted.');
   }
 
   try {

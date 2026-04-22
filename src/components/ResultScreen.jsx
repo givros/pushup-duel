@@ -6,7 +6,7 @@ import { formatDuelRemainingTime, getDuelRemainingMs } from '../utils/duelExpira
 export default function ResultScreen({ result, opponent, flow = 'outgoing', onHome }) {
   const isMaxMode = result.mode === CHALLENGE_MODES.maxReps;
   const isStarterFlow = flow === 'starter';
-  const opponentName = opponent?.pseudo || result.opponentName || 'votre adversaire';
+  const opponentName = opponent?.pseudo || result.opponentName || 'your opponent';
   const isIncomingAnswer = flow === 'incoming';
   const outcome = result.duelOutcome || result.outcome || RESULT_OUTCOMES.pending;
   const isPending = outcome === RESULT_OUTCOMES.pending;
@@ -28,28 +28,28 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
   return (
     <main className={`screen result-screen async-result-screen ${isPending ? 'pending-duel-result' : ''}`}>
       <section className={`victory-hero compact-result async-result-hero ${isDefeat ? 'defeat-result' : ''} ${isPending ? 'pending-result' : ''}`}>
-        <p>{isStarterFlow ? 'Défi relevé' : isPending ? 'Duel envoyé' : 'Résultat final'}</p>
-        <h1>{isStarterFlow ? 'Score envoyé' : getResultTitle(outcome)}</h1>
+        <p>{isStarterFlow ? 'Duel answered' : isPending ? 'Duel sent' : 'Final result'}</p>
+        <h1>{isStarterFlow ? 'Score sent' : getResultTitle(outcome)}</h1>
       </section>
 
       <section className="result-focus async-result-focus">
-        <span>Ton résultat</span>
+        <span>Your result</span>
         <strong>
           {result.pushups}
-          <small>pompes</small>
+          <small>push-ups</small>
         </strong>
       </section>
 
       <section className="result-summary async-result-summary">
         <article>
-          <span>Temps</span>
+          <span>Time</span>
           <strong>
             {formatSeconds(result.timeMs)}
             <small>s</small>
           </strong>
         </article>
         <article>
-          <span>{isMaxMode ? 'Score' : 'Objectif'}</span>
+          <span>{isMaxMode ? 'Score' : 'Goal'}</span>
           <strong>{isMaxMode ? `${result.pushups}` : `${result.pushups}/${result.goal}`}</strong>
         </article>
       </section>
@@ -62,17 +62,17 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
         )}
         <div>
           <span>{challengeTitle(result)}</span>
-          <h2>{isStarterFlow ? `Ton score est enregistré face à ${opponentName}. Bienvenue dans l’arène.` : getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
+          <h2>{isStarterFlow ? `Your score is saved against ${opponentName}. Welcome to the arena.` : getResultMessage({ outcome, isIncomingAnswer, opponentName })}</h2>
           {hasOpponentScore ? (
             <p>
-              Score adversaire : {result.opponentPushups} pompes
-              {typeof result.opponentTimeMs === 'number' ? ` en ${formatSeconds(result.opponentTimeMs)}s` : ''}
+              Opponent score: {result.opponentPushups} push-ups
+              {typeof result.opponentTimeMs === 'number' ? ` in ${formatSeconds(result.opponentTimeMs)}s` : ''}
             </p>
           ) : isPending && result.duelExpiresAt ? (
             <p className="result-countdown">
               {remainingMs > 0
-                ? `Victoire automatique si aucune réponse dans ${formatDuelRemainingTime(remainingMs)}.`
-                : 'Temps écoulé, résolution du duel en cours.'}
+                ? `Automatic win if there is no answer within ${formatDuelRemainingTime(remainingMs)}.`
+                : 'Time is up, duel resolution is in progress.'}
             </p>
           ) : (
             opponent && <p>{opponent.stat} • {opponent.rank}</p>
@@ -81,25 +81,25 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
       </section>
 
       {isPending && !isStarterFlow && (
-        <section className="async-result-help" aria-label="Suite du duel">
+        <section className="async-result-help" aria-label="Duel follow-up">
           <article>
             <Icon name="timer" className="filled" />
-            <span>Ton adversaire a 24h pour répondre.</span>
+            <span>Your opponent has 24h to answer.</span>
           </article>
           <article>
             <Icon name="check_circle" className="filled" />
-            <span>Si aucun score n’est envoyé, tu gagnes automatiquement.</span>
+            <span>If no score is sent, you automatically win.</span>
           </article>
           <article>
             <Icon name="leaderboard" className="filled" />
-            <span>Tu verras le résultat dans ton historique.</span>
+            <span>You will see the result in your history.</span>
           </article>
         </section>
       )}
 
       <section className="result-actions single-action">
         <button className="primary-button" type="button" onClick={onHome}>
-          {isStarterFlow ? 'Entrer dans l’arène' : 'Retour'}
+          {isStarterFlow ? 'Enter the arena' : 'Back'}
         </button>
       </section>
     </main>
@@ -108,40 +108,40 @@ export default function ResultScreen({ result, opponent, flow = 'outgoing', onHo
 
 function getResultTitle(outcome) {
   if (outcome === RESULT_OUTCOMES.victory) {
-    return 'Victoire';
+    return 'Victory';
   }
 
   if (outcome === RESULT_OUTCOMES.defeat) {
-    return 'Défaite';
+    return 'Defeat';
   }
 
   if (outcome === RESULT_OUTCOMES.draw) {
-    return 'Égalité';
+    return 'Draw';
   }
 
-  return 'En attente';
+  return 'Waiting';
 }
 
 function getResultMessage({ outcome, isIncomingAnswer, opponentName }) {
   if (outcome === RESULT_OUTCOMES.pending) {
-    return 'En attente du score de votre adversaire';
+    return "Waiting for your opponent's score";
   }
 
   if (outcome === RESULT_OUTCOMES.victory) {
-    return `Tu passes devant ${opponentName}.`;
+    return `You are ahead of ${opponentName}.`;
   }
 
   if (outcome === RESULT_OUTCOMES.defeat) {
-    return `Le score de ${opponentName} est meilleur.`;
+    return `${opponentName} has the better score.`;
   }
 
   if (outcome === RESULT_OUTCOMES.draw) {
-    return `Score identique avec ${opponentName}.`;
+    return `You tied with ${opponentName}.`;
   }
 
   return isIncomingAnswer
-    ? `Ton résultat a été renvoyé à ${opponentName}.`
-    : `Ton résultat a été envoyé à ${opponentName}.`;
+    ? `Your result was sent back to ${opponentName}.`
+    : `Your result was sent to ${opponentName}.`;
 }
 
 function formatSeconds(milliseconds) {

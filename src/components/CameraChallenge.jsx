@@ -29,7 +29,7 @@ const POSE_CONNECTIONS = [
 
 const initialDetection = {
   count: 0,
-  status: 'Prêt',
+  status: 'Ready',
   confidence: 0,
   isValid: false,
   phase: 'waitingTop'
@@ -72,18 +72,18 @@ export default function CameraChallenge({
   const isReady = cameraStatus === 'ready' && modelStatus === 'ready';
   const setupLabel = useMemo(() => {
     if (cameraStatus === 'error') {
-      return cameraError || 'Caméra indisponible';
+      return cameraError || 'Camera unavailable';
     }
     if (modelStatus === 'error') {
-      return modelError || 'Modèle indisponible';
+      return modelError || 'Model unavailable';
     }
     if (cameraStatus === 'requesting') {
-      return cameraPermission === 'granted' ? 'Démarrage caméra' : 'Autorise la caméra';
+      return cameraPermission === 'granted' ? 'Starting camera' : 'Allow camera access';
     }
     if (modelStatus === 'loading') {
-      return 'Chargement détection';
+      return 'Loading detection';
     }
-    return 'Préparation';
+    return 'Preparing';
   }, [cameraError, cameraPermission, cameraStatus, modelError, modelStatus]);
 
   const finishChallenge = useCallback(
@@ -137,7 +137,7 @@ export default function CameraChallenge({
         setPhase('active');
         setDetection((current) => ({
           ...current,
-          status: current.isValid ? 'Descends' : 'mal cadré'
+          status: current.isValid ? 'Go down' : 'bad framing'
         }));
         return;
       }
@@ -196,7 +196,7 @@ export default function CameraChallenge({
           return;
         }
         setModelStatus('error');
-        setModelError(error instanceof Error ? error.message : 'Chargement impossible');
+        setModelError(error instanceof Error ? error.message : 'Unable to load');
       });
 
     return () => {
@@ -213,7 +213,7 @@ export default function CameraChallenge({
     setPushups(0);
     setCountdown(COUNTDOWN_SECONDS);
     setReadyHoldRemainingMs(READY_HOLD_MS);
-    setDetection({ ...initialDetection, status: 'Prêt' });
+    setDetection({ ...initialDetection, status: 'Ready' });
     readySinceRef.current = null;
     phaseRef.current = 'arming';
     setPhase('arming');
@@ -287,7 +287,7 @@ export default function CameraChallenge({
           publishDetection(preview, now);
 
           if (phaseRef.current === 'arming') {
-            if (preview.status === 'Prêt' && preview.isValid) {
+            if (preview.status === 'Ready' && preview.isValid) {
               if (readySinceRef.current === null) {
                 readySinceRef.current = now;
               }
@@ -350,11 +350,11 @@ export default function CameraChallenge({
           <p>{setupLabel}</p>
           <div className="permission-actions">
             <button className="secondary-button" type="button" onClick={handleStop}>
-              Annuler
+              Cancel
             </button>
             {cameraStatus === 'error' && (
               <button className="primary-button" type="button" onClick={() => requestCamera().catch(() => {})}>
-                Réessayer
+                Retry
               </button>
             )}
           </div>
@@ -370,11 +370,11 @@ function getOverlayLabel({ isReady, phase, setupLabel, status }) {
   }
 
   if (phase === 'arming') {
-    return status === 'Prêt' ? 'Reste prêt' : 'Place-toi en position de pompe';
+    return status === 'Ready' ? 'Hold ready' : 'Get into push-up position';
   }
 
   if (phase === 'countdown') {
-    return 'Place-toi en position';
+    return 'Get into position';
   }
 
   return setupLabel;

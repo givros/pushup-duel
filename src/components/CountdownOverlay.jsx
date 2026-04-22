@@ -7,7 +7,7 @@ export default function CountdownOverlay({ ready, count, label, onCancel }) {
       <div className="countdown-number">{ready ? count : '--'}</div>
       <button className="countdown-cancel-button" type="button" onClick={onCancel}>
         <Icon name="close" />
-        Annuler
+        Cancel
       </button>
     </div>
   );

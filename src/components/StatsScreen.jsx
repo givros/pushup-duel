@@ -19,7 +19,7 @@ export default function StatsScreen({ progression, onOpenSettings }) {
       <TopBar compact progression={progression} onProfileClick={onOpenSettings} />
 
       <header className="stats-header">
-        <span>Suivi joueur</span>
+        <span>Player tracking</span>
         <h1>Stats</h1>
       </header>
 
@@ -28,39 +28,39 @@ export default function StatsScreen({ progression, onOpenSettings }) {
           <Icon name="bolt" className="filled" />
           <span>Total</span>
           <strong>{stats.totalPushups}</strong>
-          <small>pompes</small>
+          <small>push-ups</small>
         </article>
         <article>
           <Icon name="timer" className="filled" />
-          <span>Record 1 min</span>
+          <span>1 min best</span>
           <strong>{stats.bestOneMinute}</strong>
-          <small>pompes</small>
+          <small>push-ups</small>
         </article>
       </section>
 
-      <section className="settings-grid stats-grid" aria-label="Statistiques détaillées">
+      <section className="settings-grid stats-grid" aria-label="Detailed statistics">
         <article>
-          <span>Combats</span>
+          <span>Fights</span>
           <strong>{stats.sessions}</strong>
         </article>
         <article>
-          <span>Victoires</span>
+          <span>Wins</span>
           <strong>{victories}</strong>
         </article>
         <article>
-          <span>Défaites</span>
+          <span>Losses</span>
           <strong>{stats.defeats}</strong>
         </article>
         <article>
-          <span>Égalités</span>
+          <span>Draws</span>
           <strong>{draws}</strong>
         </article>
         <article>
-          <span>En attente</span>
+          <span>Waiting</span>
           <strong>{pending}</strong>
         </article>
         <article>
-          <span>Chrono</span>
+          <span>Timed</span>
           <strong>{bestFixed}</strong>
         </article>
       </section>
@@ -68,7 +68,7 @@ export default function StatsScreen({ progression, onOpenSettings }) {
       <section className="mission-card compact stats-xp-card">
         <div className="mission-head">
           <div>
-            <span>Niveau {profile.level}</span>
+            <span>Level {profile.level}</span>
             <strong>{profile.nickname}</strong>
           </div>
           <small>{profile.xp} XP</small>
@@ -76,15 +76,15 @@ export default function StatsScreen({ progression, onOpenSettings }) {
         <div className="mission-track" aria-hidden="true">
           <div style={{ width: `${Math.min(100, (profile.xp % 500) / 5)}%` }} />
         </div>
-        <p>{profile.xp % 500} / 500 XP avant le prochain niveau</p>
+        <p>{profile.xp % 500} / 500 XP before the next level</p>
       </section>
 
       <section className="home-history">
         <div className="section-title">
-          <h2>Derniers combats</h2>
+          <h2>Recent fights</h2>
           <small>{history.length}</small>
         </div>
-        <HistoryList history={history} limit={5} emptyLabel="Aucun combat enregistré." />
+        <HistoryList history={history} limit={5} emptyLabel="No saved fights." />
       </section>
     </main>
   );

@@ -1,21 +1,21 @@
-# Push Challenge
+# Push-up Duel
 
-MVP React mobile-first de challenge de pompes, avec caméra, MediaPipe Pose Landmarker Web, stockage Supabase, PWA et déploiement GitHub Pages sur :
+Mobile-first React MVP for push-up duels with camera tracking, MediaPipe Pose Landmarker Web, Supabase storage, PWA support, and GitHub Pages deployment:
 
 https://givros.github.io/pushup-duel/
 
-## Prerequis
+## Requirements
 
-Utiliser une version récente de Node.js. Node 20+ est recommandé, Node 22 fonctionne très bien.
+Use a recent Node.js version. Node 20+ is recommended, and Node 22 works well.
 
 ```bash
 node -v
 npm -v
 ```
 
-## Creation du projet
+## Project Setup
 
-Depuis zéro, le projet peut être créé avec Vite :
+From scratch, the project can be created with Vite:
 
 ```bash
 npm create vite@latest pushup-duel -- --template react
@@ -23,11 +23,11 @@ cd pushup-duel
 npm install
 ```
 
-Dans ce dépôt, les fichiers Vite/React sont déjà placés à la racine `pushup-duel`.
+In this repository, the Vite and React files are already located at the `pushup-duel` root.
 
-## Dependances
+## Dependencies
 
-Les dependances principales sont :
+Main dependencies:
 
 ```bash
 npm install @mediapipe/tasks-vision
@@ -35,46 +35,48 @@ npm install @supabase/supabase-js
 npm install -D vite-plugin-pwa
 ```
 
-## Configuration Supabase
+## Supabase Configuration
 
-L'application utilise Supabase Auth en connexion anonyme, puis stocke les données dans des tables séparées :
+The app uses Supabase Auth with anonymous sign-in, then stores data in separate tables:
 
-- `player_accounts` : compte joueur, pseudo, niveau, XP, pièces ;
-- `player_settings` : réglages utilisateur, dont l'autorisation caméra ;
-- `player_stats` : statistiques agrégées et dernier résultat ;
-- `player_history` : historique des défis.
-- `duel_challenges` : défis asynchrones envoyés et reçus entre joueurs.
+- `player_accounts`: player account, nickname, level, XP, and coins.
+- `player_settings`: user settings, including camera permission state.
+- `player_stats`: aggregate statistics and the latest result.
+- `player_history`: duel history.
+- `duel_challenges`: asynchronous duels sent and received between players.
 
-La session anonyme permet de garder un profil par navigateur sans écran de login. Le compte applicatif est créé uniquement lorsque l'utilisateur valide l'onboarding.
+The anonymous session keeps one profile per browser without a login screen. The in-app account is created only when the user completes onboarding.
 
-Au premier lancement, l'onboarding présente l'application en 3 étapes, puis demande la création du profil. Les nouveaux comptes reçoivent ensuite un défi de découverte présenté comme un défi lancé par un adversaire local. Ce premier duel n'est affiché qu'une seule fois.
+On first launch, onboarding explains the app in 3 steps, then asks the user to create a profile. New accounts then receive a discovery duel presented as a challenge sent by a local opponent. This first duel is shown only once.
 
-Les défis reçus, envoyés, terminés et expirés sont regroupés dans l'onglet `Défis`. Pour tester le flow complet, créer deux comptes depuis deux navigateurs ou deux profils de navigateur différents, puis lancer un duel depuis le premier compte vers le second.
+Received, sent, completed, and expired duels are grouped in the `History` tab. To test the full flow, create two accounts from two browsers or two separate browser profiles, then start a duel from the first account against the second.
 
-Un duel envoyé reste en attente tant que l'adversaire n'a pas terminé son score. Quand les deux scores sont disponibles, l'application compare automatiquement les résultats et met à jour l'écran de résultat ainsi que l'historique en victoire, défaite ou égalité.
-Chaque duel en attente affiche un compte à rebours de 24 h. À l'expiration, le duel est résolu au prochain passage sur l'accueil ou au prochain rafraîchissement de l'écran de résultat : le joueur qui a répondu gagne, celui qui n'a pas répondu perd.
-Le fichier `supabase/schema.sql` ajoute aussi les métadonnées d'historique nécessaires pour afficher l'adversaire, le score adverse, le rôle du duel et les expirations.
+A sent duel stays pending until the opponent completes their score. When both scores are available, the app compares the results automatically and updates the result screen plus history as a win, loss, or draw.
 
-Dans Supabase :
+Each pending duel displays a 24h countdown. When it expires, the duel is resolved on the next home refresh or result-screen refresh: the player who answered wins, and the player who did not answer loses.
 
-1. Créer un projet Supabase.
-2. Activer les connexions anonymes dans `Authentication -> Sign In / Providers -> Anonymous sign-ins`.
-3. Ouvrir le SQL Editor et exécuter le fichier `supabase/schema.sql`.
-4. Récupérer l'URL du projet et la clé anon/publishable depuis `Project Settings -> API`.
+The `supabase/schema.sql` file also adds the history metadata required to display the opponent, opponent score, duel role, and expirations.
 
-En local, créer un fichier `.env` à partir de `.env.example` :
+In Supabase:
+
+1. Create a Supabase project.
+2. Enable anonymous sign-ins in `Authentication -> Sign In / Providers -> Anonymous sign-ins`.
+3. Open the SQL Editor and run `supabase/schema.sql`.
+4. Copy the project URL and anon or publishable key from `Project Settings -> API`.
+
+Locally, create a `.env` file from `.env.example`:
 
 ```bash
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-Pour GitHub Pages, ajouter ces secrets dans `Settings -> Secrets and variables -> Actions` :
+For GitHub Pages, add these secrets in `Settings -> Secrets and variables -> Actions`:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
-## Commandes
+## Commands
 
 ```bash
 npm install
@@ -83,62 +85,62 @@ npm run build
 npm run preview
 ```
 
-`npm run build` genere le dossier `/dist`, qui est le dossier deploye sur GitHub Pages.
+`npm run build` generates the `/dist` folder, which is deployed to GitHub Pages.
 
-## Configuration GitHub Pages
+## GitHub Pages Setup
 
-La configuration critique est dans `vite.config.js` :
+Critical settings live in `vite.config.js`:
 
 - `base: '/pushup-duel/'`
 - PWA `start_url: '/pushup-duel/'`
 - PWA `scope: '/pushup-duel/'`
 - PWA `orientation: 'portrait-primary'`
-- icones dans `public/icons/`
+- icons in `public/icons/`
 
-Le workflow `.github/workflows/deploy.yml` installe Node, lance `npm install`, injecte les variables Supabase depuis les secrets GitHub, construit avec `npm run build`, puis publie `/dist`.
+The `.github/workflows/deploy.yml` workflow installs Node, runs `npm install`, injects Supabase variables from GitHub secrets, builds with `npm run build`, then publishes `/dist`.
 
-Dans GitHub :
+In GitHub:
 
-1. Aller dans `Settings -> Pages`.
-2. Choisir `GitHub Actions` comme source.
-3. Chaque push sur `main` déploie automatiquement l'application.
+1. Go to `Settings -> Pages`.
+2. Choose `GitHub Actions` as the source.
+3. Every push to `main` deploys the app automatically.
 
-## Test sur mobile
+## Mobile Testing
 
-La caméra exige un contexte sécurisé. Pour tester sur mobile, utiliser l'URL HTTPS GitHub Pages après déploiement :
+The camera requires a secure context. To test on mobile, use the HTTPS GitHub Pages URL after deployment:
 
 https://givros.github.io/pushup-duel/
 
-En local, `localhost` fonctionne sur la machine de développement, mais un téléphone qui accède à une IP locale en HTTP peut refuser la caméra.
+Locally, `localhost` works on the development machine, but a phone accessing a local IP over HTTP may block camera access.
 
-## Detection des pompes
+## Push-up Detection
 
-La détection est implémentée dans :
+Detection is implemented in:
 
 - `src/utils/poseMath.js`
 - `src/utils/pushupDetector.js`
 - `src/services/poseLandmarkerService.js`
 
-Le détecteur sélectionne le côté du corps le plus fiable, calcule l'angle épaule-coude-poignet, filtre les frames peu fiables, puis compte uniquement un cycle complet :
+The detector selects the most reliable side of the body, calculates the shoulder-elbow-wrist angle, filters low-confidence frames, then counts only a complete cycle:
 
-1. position haute détectée avec bras tendus ;
-2. position basse détectée avec coude plié ;
-3. retour en position haute ;
-4. comptage après hysteresis, délai minimum et cooldown.
+1. high position detected with extended arms.
+2. low position detected with bent elbows.
+3. return to high position.
+4. count after hysteresis, minimum transition time, and cooldown.
 
-Seuils principaux dans `PUSHUP_DETECTOR_DEFAULTS` :
+Main thresholds in `PUSHUP_DETECTOR_DEFAULTS`:
 
-- `minConfidence` : confiance minimale des points MediaPipe ;
-- `highElbowAngle` : angle minimum pour la position haute ;
-- `lowElbowAngle` : angle maximum pour la position basse ;
-- `minStableFrames` : nombre de frames cohérentes avant transition ;
-- `minTransitionMs` : durée minimale entre haut/bas ;
-- `cooldownMs` : anti double-comptage ;
-- `minShoulderTravel` : déplacement minimal de l'épaule, normalisé par le torse ;
-- `minTorsoLength` : filtre les personnes trop petites ou trop loin dans l'image.
+- `minConfidence`: minimum confidence for MediaPipe landmarks.
+- `highElbowAngle`: minimum angle for the high position.
+- `lowElbowAngle`: maximum angle for the low position.
+- `minStableFrames`: number of consistent frames before a transition.
+- `minTransitionMs`: minimum duration between high and low positions.
+- `cooldownMs`: double-count protection.
+- `minShoulderTravel`: minimum shoulder movement normalized by torso length.
+- `minTorsoLength`: filters users who are too small or too far from the camera.
 
-Pour ajuster la precision :
+To tune accuracy:
 
-- si l'app compte trop facilement, augmenter `minConfidence`, diminuer `lowElbowAngle` ou augmenter `minShoulderTravel` ;
-- si l'app manque des répétitions valides, baisser légèrement `minConfidence`, augmenter `lowElbowAngle` ou baisser `minShoulderTravel` ;
-- placer le téléphone de côté, assez bas, avec le haut du corps visible.
+- if the app counts too easily, increase `minConfidence`, decrease `lowElbowAngle`, or increase `minShoulderTravel`.
+- if the app misses valid reps, slightly lower `minConfidence`, increase `lowElbowAngle`, or lower `minShoulderTravel`.
+- place the phone to the side, fairly low, with the upper body visible.

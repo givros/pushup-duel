@@ -29,7 +29,7 @@ export default function HomeScreen({
     }
 
     if (mode === CHALLENGE_MODES.fixedGoal && (!Number.isInteger(parsedGoal) || parsedGoal < 1 || parsedGoal > 999)) {
-      setError('Entre un objectif entre 1 et 999 pompes.');
+      setError('Enter a goal between 1 and 999 push-ups.');
       return;
     }
 
@@ -44,14 +44,14 @@ export default function HomeScreen({
       <section className="arena-hero compact-hero">
         <div className="arena-bg" aria-hidden="true" />
         <div className="arena-content">
-          <span>Prêt pour le défi</span>
+          <span>Ready for the duel</span>
           <h1>
-            PUSH-UP <em>DÉFI</em>
+            PUSH-UP <em>DUEL</em>
           </h1>
 
           <form className="duel-launcher" onSubmit={handleSubmit} noValidate>
             <fieldset className="mode-selector">
-              <legend>Type de défi</legend>
+              <legend>Challenge type</legend>
               <label className={mode === CHALLENGE_MODES.maxReps ? 'selected' : ''}>
                 <input
                   type="radio"
@@ -60,7 +60,7 @@ export default function HomeScreen({
                   checked={mode === CHALLENGE_MODES.maxReps}
                   onChange={() => setMode(CHALLENGE_MODES.maxReps)}
                 />
-                <span>Max en 1 min</span>
+                <span>1 min max</span>
               </label>
               <label className={mode === CHALLENGE_MODES.fixedGoal ? 'selected' : ''}>
                 <input
@@ -70,13 +70,13 @@ export default function HomeScreen({
                   checked={mode === CHALLENGE_MODES.fixedGoal}
                   onChange={() => setMode(CHALLENGE_MODES.fixedGoal)}
                 />
-                <span>Objectif chrono</span>
+                <span>Timed goal</span>
               </label>
             </fieldset>
 
             {mode === CHALLENGE_MODES.fixedGoal && (
               <>
-                <label htmlFor="pushup-goal">Nombre de pompes</label>
+                <label htmlFor="pushup-goal">Number of push-ups</label>
                 <div className="goal-control">
                   <input
                     id="pushup-goal"
@@ -89,7 +89,7 @@ export default function HomeScreen({
                     onChange={(event) => setGoal(event.target.value)}
                     required
                   />
-                  <span>Pompes</span>
+                  <span>Push-ups</span>
                 </div>
               </>
             )}
@@ -97,8 +97,8 @@ export default function HomeScreen({
             <div className="challenge-note">
               <Icon name={mode === CHALLENGE_MODES.maxReps ? 'timer' : 'bolt'} className="filled" />
               {mode === CHALLENGE_MODES.maxReps
-                ? 'Faire le maximum de pompes en 60 secondes.'
-                : 'Atteindre ton objectif le plus rapidement possible.'}
+                ? 'Do as many push-ups as possible in 60 seconds.'
+                : 'Reach your goal as fast as possible.'}
             </div>
 
             {error && (
@@ -109,50 +109,50 @@ export default function HomeScreen({
 
             <button className="launch-button" type="submit">
               <Icon name="play_arrow" className="filled" />
-              {starterChallengePending ? 'Défi reçu à relever' : 'Lancer un duel'}
+              {starterChallengePending ? 'Answer received duel' : 'Start a duel'}
             </button>
           </form>
         </div>
       </section>
 
-      <section className="progress-overview" aria-label="Progression">
+      <section className="progress-overview" aria-label="Progress">
         <article>
-          <span>Record 1 min</span>
+          <span>1 min best</span>
           <strong>{stats.bestOneMinute}</strong>
-          <small>pompes</small>
+          <small>push-ups</small>
         </article>
         <article>
           <span>Total</span>
           <strong>{stats.totalPushups}</strong>
-          <small>pompes</small>
+          <small>push-ups</small>
         </article>
         <article>
-          <span>Max déclaré</span>
+          <span>Declared max</span>
           <strong>{profile.maxPushups}</strong>
-          <small>profil</small>
+          <small>profile</small>
         </article>
       </section>
 
       <section className="mission-card compact">
         <div className="mission-head">
           <div>
-            <span>Progression</span>
+            <span>Progress</span>
             <strong>{profile.nickname}</strong>
           </div>
-          <small>Niveau {profile.level}</small>
+          <small>Level {profile.level}</small>
         </div>
         <div className="mission-track" aria-hidden="true">
           <div style={{ width: `${Math.min(100, (profile.xp % 500) / 5)}%` }} />
         </div>
-        <p>{profile.xp % 500} / 500 XP avant le prochain niveau</p>
+        <p>{profile.xp % 500} / 500 XP before the next level</p>
       </section>
 
       <section className="home-history">
         <div className="section-title">
-          <h2>Derniers combats</h2>
-          <button type="button" onClick={onOpenSettings}>Tout voir</button>
+          <h2>Recent fights</h2>
+          <button type="button" onClick={onOpenSettings}>View all</button>
         </div>
-        <HistoryList history={stats.history} limit={3} emptyLabel="Tes 3 derniers combats apparaîtront ici." />
+        <HistoryList history={stats.history} limit={3} emptyLabel="Your last 3 fights will appear here." />
       </section>
     </main>
   );

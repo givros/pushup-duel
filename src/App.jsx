@@ -60,8 +60,8 @@ const HOME_REFRESH_INTERVAL_MS = 7000;
 const STARTER_OPPONENT = {
   id: 'maya-starter',
   pseudo: 'MayaCore',
-  stat: 'Défi 15 pompes',
-  rank: 'Rang argent'
+  stat: '15-push-up challenge',
+  rank: 'Silver rank'
 };
 const DEFAULT_PUSHUP_GOAL = 15;
 const STARTER_CHALLENGE_GOAL = 15;
@@ -573,8 +573,8 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Chargement"
-          message="Préparation de ton profil..."
+          title="Loading"
+          message="Preparing your profile..."
         />
       </div>
     );
@@ -584,8 +584,8 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Application indisponible"
-          message="La sauvegarde des profils n'est pas encore configurée. Réessaie dans quelques instants."
+          title="App unavailable"
+          message="Profile saving is not configured yet. Try again in a few moments."
         />
       </div>
     );
@@ -595,11 +595,11 @@ export default function App() {
     return (
       <div className="app-shell">
         <SystemScreen
-          title="Connexion impossible"
-          message={syncError || 'Impossible de charger ton profil pour le moment.'}
+          title="Connection failed"
+          message={syncError || 'Unable to load your profile right now.'}
         >
           <button className="primary-button" type="button" onClick={() => window.location.reload()}>
-            Réessayer
+            Retry
           </button>
         </SystemScreen>
       </div>
@@ -825,5 +825,5 @@ function SystemScreen({ title, message, children }) {
 }
 
 function getSyncErrorMessage(error) {
-  return error?.message || 'Impossible de sauvegarder ton profil.';
+  return error?.message || 'Unable to save your profile.';
 }

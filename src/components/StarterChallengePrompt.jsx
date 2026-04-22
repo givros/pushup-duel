@@ -2,8 +2,8 @@ import Icon from './Icon.jsx';
 
 const challenger = {
   pseudo: 'MayaCore',
-  stat: 'Défi : 15 pompes',
-  rank: 'Rang argent'
+  stat: 'Challenge: 15 push-ups',
+  rank: 'Silver rank'
 };
 
 export default function StarterChallengePrompt({ profile, onStart }) {
@@ -19,20 +19,20 @@ export default function StarterChallengePrompt({ profile, onStart }) {
         </div>
 
         <div className="starter-copy">
-          <span className="onboarding-kicker">Défi reçu</span>
-          <h1 id="starter-title">MayaCore te défie</h1>
+          <span className="onboarding-kicker">Duel received</span>
+          <h1 id="starter-title">MayaCore challenged you</h1>
           <p>
-            Bienvenue {profile?.nickname || 'athlète'}. MayaCore vient de t’envoyer un défi découverte :
-            réaliser 15 pompes le plus rapidement possible.
+            Welcome {profile?.nickname || 'athlete'}. MayaCore just sent you a discovery duel:
+            complete 15 push-ups as fast as possible.
           </p>
         </div>
 
-        <section className="starter-challenger" aria-label="Adversaire">
+        <section className="starter-challenger" aria-label="Opponent">
           <div className="opponent-avatar opponent-maya-starter" aria-hidden="true">
             <span>M</span>
           </div>
           <div>
-            <span>Adversaire</span>
+            <span>Opponent</span>
             <strong>{challenger.pseudo}</strong>
             <p>{challenger.stat} • {challenger.rank}</p>
           </div>
@@ -42,21 +42,21 @@ export default function StarterChallengePrompt({ profile, onStart }) {
           <article>
             <Icon name="flag" className="filled" />
             <div>
-              <strong>15 pompes</strong>
-              <span>Atteins l’objectif sans te précipiter.</span>
+              <strong>15 push-ups</strong>
+              <span>Reach the goal without rushing.</span>
             </div>
           </article>
           <article>
             <Icon name="center_focus_strong" className="filled" />
             <div>
-              <strong>Caméra active</strong>
-              <span>Place-toi en position de pompe.</span>
+              <strong>Camera active</strong>
+              <span>Get into push-up position.</span>
             </div>
           </article>
         </div>
 
         <button className="primary-button" type="button" onClick={onStart}>
-          Relever le défi
+          Answer the duel
         </button>
       </section>
     </main>

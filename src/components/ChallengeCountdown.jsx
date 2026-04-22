@@ -8,7 +8,7 @@ export default function ChallengeCountdown({ expiresAt, now, prefix }) {
   return (
     <small className={`challenge-timer ${isUrgent ? 'urgent' : ''}`}>
       <Icon name={remainingMs > 0 ? 'timer' : 'sync'} className="filled" />
-      {remainingMs > 0 ? `${prefix} ${formatDuelRemainingTime(remainingMs)}` : 'Résolution en cours'}
+      {remainingMs > 0 ? `${prefix} ${formatDuelRemainingTime(remainingMs)}` : 'Resolving now'}
     </small>
   );
 }

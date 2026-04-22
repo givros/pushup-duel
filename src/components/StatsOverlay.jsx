@@ -4,7 +4,7 @@ import Icon from './Icon.jsx';
 
 export default function StatsOverlay({ count, challenge, elapsedMs, status, confidence, onStop }) {
   const confidencePercent = Math.round((confidence || 0) * 100);
-  const normalizedStatus = status || 'Prêt';
+  const normalizedStatus = status || 'Ready';
   const isMaxMode = challenge.mode === CHALLENGE_MODES.maxReps;
   const remainingMs = isMaxMode ? Math.max(0, challenge.durationMs - elapsedMs) : elapsedMs;
   const progress = isMaxMode
@@ -18,21 +18,21 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
         <div className="duel-brand">
           <span className="duel-lvl">DEF</span>
           <div>
-            <strong>Push-up Défi</strong>
-            <small>{isMaxMode ? '1 minute' : 'Chrono'}</small>
+            <strong>Push-up Duel</strong>
+            <small>{isMaxMode ? '1 minute' : 'Timed'}</small>
           </div>
         </div>
 
         <div className="duel-timebox single">
           <div>
-            <span>{isMaxMode ? 'Temps restant' : 'Temps'}</span>
+            <span>{isMaxMode ? 'Time left' : 'Time'}</span>
             <strong>{formatTime(remainingMs)}</strong>
           </div>
         </div>
 
-        <button className="cancel-challenge-button" type="button" onClick={onStop} aria-label="Annuler le défi">
+        <button className="cancel-challenge-button" type="button" onClick={onStop} aria-label="Cancel challenge">
           <Icon name="close" />
-          <span>Annuler</span>
+          <span>Cancel</span>
         </button>
       </header>
 
@@ -50,7 +50,7 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
 
       <div className="camera-signal">
         <div>
-          <span>Confiance</span>
+          <span>Confidence</span>
           <strong>{confidencePercent}%</strong>
         </div>
         <div className="thin-track">
@@ -64,8 +64,8 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
           <div className="lead-player">
             <Icon name={isMaxMode ? 'timer' : 'flag'} className="filled" />
             <div>
-              <small>{isMaxMode ? 'Défi 1 minute' : 'Objectif'}</small>
-              <strong>{isMaxMode ? `${count} pompes` : `${count}/${challenge.goal} pompes`}</strong>
+              <small>{isMaxMode ? '1-minute challenge' : 'Goal'}</small>
+              <strong>{isMaxMode ? `${count} push-ups` : `${count}/${challenge.goal} push-ups`}</strong>
             </div>
           </div>
           <div className="lead-bar">
@@ -82,31 +82,31 @@ export default function StatsOverlay({ count, challenge, elapsedMs, status, conf
 
 function feedbackText(status) {
   if (status === 'OK') {
-    return { icon: 'check_circle', label: 'Parfait' };
+    return { icon: 'check_circle', label: 'Perfect' };
   }
-  if (status === 'Monte') {
-    return { icon: 'arrow_upward', label: 'Monte' };
+  if (status === 'Go up') {
+    return { icon: 'arrow_upward', label: 'Go up' };
   }
-  if (status === 'Descends') {
-    return { icon: 'arrow_downward', label: 'Descends' };
+  if (status === 'Go down') {
+    return { icon: 'arrow_downward', label: 'Go down' };
   }
-  if (status === 'mal cadré') {
-    return { icon: 'center_focus_strong', label: 'Cadrage' };
+  if (status === 'bad framing') {
+    return { icon: 'center_focus_strong', label: 'Framing' };
   }
-  return { icon: 'radio_button_checked', label: 'Prêt' };
+  return { icon: 'radio_button_checked', label: 'Ready' };
 }
 
 function statusClass(status) {
   if (status === 'OK') {
     return 'status-ok';
   }
-  if (status === 'mal cadré') {
+  if (status === 'bad framing') {
     return 'status-bad';
   }
-  if (status === 'Monte') {
+  if (status === 'Go up') {
     return 'status-up';
   }
-  if (status === 'Descends') {
+  if (status === 'Go down') {
     return 'status-down';
   }
   return 'status-ready';

@@ -34,19 +34,19 @@ export default function ChallengesScreen({
 
       <header className="challenges-header">
         <div>
-          <span>Centre de duels</span>
-          <h1>Historique</h1>
+          <span>Duel center</span>
+          <h1>History</h1>
         </div>
         <button className="secondary-button" type="button" onClick={onRefreshChallenges}>
           <Icon name="sync" className="filled" />
-          Actualiser
+          Refresh
         </button>
       </header>
 
       <section className="challenge-inbox">
         <div className="section-title">
-          <h2>Reçus</h2>
-          <small>{starterChallengePending || incomingChallenges.length > 0 ? 'À traiter' : 'Aucun'}</small>
+          <h2>Received</h2>
+          <small>{starterChallengePending || incomingChallenges.length > 0 ? 'To answer' : 'None'}</small>
         </div>
 
         {starterChallengePending || incomingChallenges.length > 0 ? (
@@ -57,13 +57,13 @@ export default function ChallengesScreen({
                   <Icon name="bolt" className="filled" />
                 </div>
                 <div className="challenge-copy">
-                  <span>15 pompes le plus vite possible</span>
+                  <span>15 push-ups as fast as possible</span>
                   <strong>MayaCore</strong>
-                  <p>Défi reçu</p>
+                  <p>Duel received</p>
                 </div>
                 <div className="challenge-actions single">
                   <button className="primary-button" type="button" onClick={onStartStarterChallenge}>
-                    Relever
+                    Answer
                   </button>
                 </div>
               </article>
@@ -77,14 +77,14 @@ export default function ChallengesScreen({
                 <div className="challenge-copy">
                   <span>{challengeTitle(duel.challenge)}</span>
                   <strong>{duel.opponent.pseudo}</strong>
-                  <p>{duel.challengerResult.pushups} pompes envoyées</p>
-                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="À relever dans" />
+                  <p>{duel.challengerResult.pushups} push-ups sent</p>
+                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="Answer within" />
                 </div>
                 <div className="challenge-actions">
                   <button className="primary-button" type="button" onClick={() => onAcceptChallenge(duel)}>
-                    Relever
+                    Answer
                   </button>
-                  <button className="secondary-button icon-only-button" type="button" onClick={() => onDeclineChallenge(duel.id)} aria-label="Refuser le défi">
+                  <button className="secondary-button icon-only-button" type="button" onClick={() => onDeclineChallenge(duel.id)} aria-label="Decline duel">
                     <Icon name="close" />
                   </button>
                 </div>
@@ -92,14 +92,14 @@ export default function ChallengesScreen({
             ))}
           </div>
         ) : (
-          <EmptyChallengeState label="Aucun défi reçu pour le moment." />
+          <EmptyChallengeState label="No received duels yet." />
         )}
       </section>
 
       <section className="challenge-inbox sent-challenge-inbox">
         <div className="section-title">
-          <h2>Envoyés</h2>
-          <small>{outgoingChallenges.length > 0 ? 'En attente' : 'Aucun'}</small>
+          <h2>Sent</h2>
+          <small>{outgoingChallenges.length > 0 ? 'Waiting' : 'None'}</small>
         </div>
 
         {outgoingChallenges.length > 0 ? (
@@ -112,31 +112,31 @@ export default function ChallengesScreen({
                 <div className="challenge-copy">
                   <span>{challengeTitle(duel.challenge)}</span>
                   <strong>{duel.opponent.pseudo}</strong>
-                  <p>En attente de sa réponse</p>
-                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="Victoire auto dans" />
+                  <p>Waiting for their answer</p>
+                  <ChallengeCountdown expiresAt={duel.expiresAt} now={now} prefix="Auto win in" />
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <EmptyChallengeState label="Aucun défi envoyé en attente." />
+          <EmptyChallengeState label="No sent duels waiting." />
         )}
       </section>
 
       <section className="challenge-history-section">
         <div className="section-title">
-          <h2>Terminés</h2>
+          <h2>Completed</h2>
           <small>{completedHistory.length}</small>
         </div>
-        <HistoryList history={completedHistory} limit={6} emptyLabel="Aucun duel terminé pour le moment." />
+        <HistoryList history={completedHistory} limit={6} emptyLabel="No completed duels yet." />
       </section>
 
       <section className="challenge-history-section">
         <div className="section-title">
-          <h2>Expirés</h2>
+          <h2>Expired</h2>
           <small>{expiredHistory.length}</small>
         </div>
-        <HistoryList history={expiredHistory} limit={6} emptyLabel="Aucun duel expiré." />
+        <HistoryList history={expiredHistory} limit={6} emptyLabel="No expired duels." />
       </section>
     </main>
   );

@@ -12,7 +12,7 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
 
   async function handleCameraCheck() {
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraMessage('Caméra indisponible sur ce navigateur.');
+      setCameraMessage('Camera is unavailable in this browser.');
       onCameraPermissionChange('denied');
       return;
     }
@@ -24,10 +24,10 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
       stream.getTracks().forEach((track) => track.stop());
       onCameraPermissionChange('granted');
-      setCameraMessage('Caméra autorisée sur cet appareil.');
+      setCameraMessage('Camera is allowed on this device.');
     } catch {
       onCameraPermissionChange('denied');
-      setCameraMessage('Autorisation refusée. Modifie le réglage caméra dans ton navigateur.');
+      setCameraMessage('Permission denied. Update the camera setting in your browser.');
     } finally {
       setCheckingCamera(false);
     }
@@ -36,12 +36,12 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
   return (
     <main className="screen settings-screen">
       <header className="settings-header">
-        <button className="icon-button" type="button" onClick={onBack} aria-label="Retour à l'accueil">
+        <button className="icon-button" type="button" onClick={onBack} aria-label="Back to home">
           <Icon name="arrow_back" />
         </button>
         <div>
-          <span>Profil</span>
-          <h1>Profil</h1>
+          <span>Profile</span>
+          <h1>Profile</h1>
         </div>
       </header>
 
@@ -50,19 +50,19 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
           <span />
         </div>
         <div>
-          <span className="settings-kicker">Compte joueur</span>
+          <span className="settings-kicker">Player account</span>
           <h2>{profile.nickname}</h2>
-          <p>Niveau {profile.level} • {profile.maxPushups} pompes max déclarées</p>
+          <p>Level {profile.level} • {profile.maxPushups} declared max push-ups</p>
         </div>
       </section>
 
-      <section className="settings-grid" aria-label="Statistiques">
+      <section className="settings-grid" aria-label="Statistics">
         <article>
-          <span>Combats</span>
+          <span>Fights</span>
           <strong>{stats.sessions}</strong>
         </article>
         <article>
-          <span>Défaites</span>
+          <span>Losses</span>
           <strong>{stats.defeats}</strong>
         </article>
         <article>
@@ -70,24 +70,24 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
           <strong>{stats.totalPushups}</strong>
         </article>
         <article>
-          <span>Record 1 min</span>
+          <span>1 min best</span>
           <strong>{stats.bestOneMinute}</strong>
         </article>
       </section>
 
       <section className="settings-card">
         <div className="settings-section-title">
-          <h2>Réglages de l'app</h2>
+          <h2>App settings</h2>
         </div>
         <div className="camera-setting-row">
           <div>
             <span className={`permission-pill ${cameraPermission}`}>
               {cameraPermissionLabel(cameraPermission)}
             </span>
-            <p>Autorisation caméra</p>
+            <p>Camera permission</p>
           </div>
           <button className="secondary-button" type="button" onClick={handleCameraCheck} disabled={checkingCamera}>
-            {checkingCamera ? 'Vérification...' : 'Vérifier'}
+            {checkingCamera ? 'Checking...' : 'Check'}
           </button>
         </div>
         {cameraMessage && <p className="settings-note">{cameraMessage}</p>}
@@ -95,31 +95,31 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
 
       <section className="settings-card">
         <div className="settings-section-title">
-          <h2>Historique complet</h2>
+          <h2>Full history</h2>
         </div>
-        <HistoryList history={stats.history} emptyLabel="Aucun combat pour le moment." />
+        <HistoryList history={stats.history} emptyLabel="No fights yet." />
       </section>
 
       <section className="settings-card danger-card">
         <div className="settings-section-title">
-          <h2>Supprimer le compte</h2>
+          <h2>Delete account</h2>
         </div>
-        <p>Cette action efface ton profil, tes statistiques, ton historique et tes réglages synchronisés.</p>
+        <p>This action deletes your profile, statistics, history, and synced settings.</p>
 
         {!confirmDelete ? (
           <button className="danger-button" type="button" onClick={() => setConfirmDelete(true)}>
             <Icon name="delete" />
-            Supprimer mon compte
+            Delete my account
           </button>
         ) : (
           <div className="delete-confirm">
-            <strong>Confirmer la suppression ?</strong>
+            <strong>Confirm deletion?</strong>
             <div>
               <button className="secondary-button" type="button" onClick={() => setConfirmDelete(false)}>
-                Annuler
+                Cancel
               </button>
               <button className="danger-button" type="button" onClick={onDeleteAccount}>
-                Supprimer
+                Delete
               </button>
             </div>
           </div>
@@ -131,11 +131,11 @@ export default function SettingsScreen({ progression, onBack, onCameraPermission
 
 function cameraPermissionLabel(permission) {
   if (permission === 'granted') {
-    return 'Autorisée';
+    return 'Allowed';
   }
   if (permission === 'denied') {
-    return 'Refusée';
+    return 'Denied';
   }
 
-  return 'Non vérifiée';
+  return 'Not checked';
 }

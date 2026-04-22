@@ -3,18 +3,18 @@ import Icon from './Icon.jsx';
 const guideSteps = [
   {
     icon: 'videocam',
-    title: 'Pose ton téléphone',
-    text: 'Place-le au sol ou contre un objet stable, assez loin pour voir ton corps.'
+    title: 'Place your phone',
+    text: 'Set it on the floor or against a stable object, far enough to see your body.'
   },
   {
     icon: 'center_focus_strong',
-    title: 'Cadre-toi de côté',
-    text: 'Mets-toi de profil pour que la caméra voie clairement le mouvement.'
+    title: 'Frame yourself from the side',
+    text: 'Use a side view so the camera can clearly see the movement.'
   },
   {
     icon: 'radio_button_checked',
-    title: 'Garde les repères visibles',
-    text: 'Épaules, hanches et coudes doivent rester dans l’image pendant les pompes.'
+    title: 'Keep landmarks visible',
+    text: 'Shoulders, hips, and elbows must stay in frame during your push-ups.'
   }
 ];
 
@@ -25,12 +25,12 @@ export default function CameraGuideScreen({ onStart }) {
         <div className="camera-guide-icon" aria-hidden="true">
           <Icon name="videocam" className="filled" />
         </div>
-        <span>Avant ton premier défi</span>
-        <h1>Prépare la caméra</h1>
-        <p>Ces trois réglages rendent le comptage beaucoup plus stable.</p>
+        <span>Before your first duel</span>
+        <h1>Set up the camera</h1>
+        <p>These three settings make rep counting much more stable.</p>
       </section>
 
-      <section className="camera-guide-steps" aria-label="Préparation caméra">
+      <section className="camera-guide-steps" aria-label="Camera setup">
         {guideSteps.map((step) => (
           <article key={step.title}>
             <Icon name={step.icon} className="filled" />
@@ -43,7 +43,7 @@ export default function CameraGuideScreen({ onStart }) {
       </section>
 
       <button className="primary-button camera-guide-action" type="button" onClick={onStart}>
-        J’ai compris
+        Got it
       </button>
     </main>
   );

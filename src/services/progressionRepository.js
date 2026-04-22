@@ -23,7 +23,7 @@ export async function loadRemoteProgression() {
     .maybeSingle();
 
   if (accountError) {
-    throw makeRepositoryError('Impossible de charger ton profil.', accountError);
+    throw makeRepositoryError('Unable to load your profile.', accountError);
   }
 
   if (!account) {
@@ -50,15 +50,15 @@ export async function loadRemoteProgression() {
   ]);
 
   if (settingsResult.error) {
-    throw makeRepositoryError('Impossible de charger tes réglages.', settingsResult.error);
+    throw makeRepositoryError('Unable to load your settings.', settingsResult.error);
   }
 
   if (statsResult.error) {
-    throw makeRepositoryError('Impossible de charger tes statistiques.', statsResult.error);
+    throw makeRepositoryError('Unable to load your statistics.', statsResult.error);
   }
 
   if (historyResult.error) {
-    throw makeRepositoryError('Impossible de charger ton historique.', historyResult.error);
+    throw makeRepositoryError('Unable to load your history.', historyResult.error);
   }
 
   return progressionFromRows({
@@ -80,7 +80,7 @@ export async function saveRemoteProgression(progression) {
       accountRowFromProgression(userId, normalized),
       { onConflict: 'user_id' }
     ),
-    'Impossible de sauvegarder ton compte.'
+    'Unable to save your account.'
   );
 
   const [settingsResult, statsResult] = await Promise.all([
@@ -92,18 +92,18 @@ export async function saveRemoteProgression(progression) {
   ]);
 
   if (settingsResult.error) {
-    throw makeRepositoryError('Impossible de sauvegarder tes réglages.', settingsResult.error);
+    throw makeRepositoryError('Unable to save your settings.', settingsResult.error);
   }
 
   if (statsResult.error) {
-    throw makeRepositoryError('Impossible de sauvegarder tes statistiques.', statsResult.error);
+    throw makeRepositoryError('Unable to save your statistics.', statsResult.error);
   }
 
   if (normalized.stats.history.length > 0) {
     const { error: historyError } = await upsertHistory(supabase, userId, normalized.stats.history);
 
     if (historyError) {
-      throw makeRepositoryError('Impossible de sauvegarder ton historique.', historyError);
+      throw makeRepositoryError('Unable to save your history.', historyError);
     }
   }
 
@@ -121,7 +121,7 @@ export async function deleteRemoteProgression() {
       .eq('user_id', session.user.id);
 
     if (error) {
-      throw makeRepositoryError('Impossible de supprimer ton compte.', error);
+      throw makeRepositoryError('Unable to delete your account.', error);
     }
   }
 
@@ -132,7 +132,7 @@ async function getCurrentSession(supabase) {
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
-    throw makeRepositoryError('Session indisponible.', error);
+    throw makeRepositoryError('Session unavailable.', error);
   }
 
   return data.session || null;
@@ -148,7 +148,7 @@ async function ensureAnonymousSession(supabase) {
   const { data, error } = await supabase.auth.signInAnonymously();
 
   if (error || !data.session) {
-    throw makeRepositoryError('Impossible de créer ton compte.', error);
+    throw makeRepositoryError('Unable to create your account.', error);
   }
 
   return data.session;

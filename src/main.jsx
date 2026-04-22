@@ -1,7 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App.jsx';
+import { applyDocumentLanguage } from './i18n/language.js';
 import './styles/global.css';
+
+applyDocumentLanguage();
 
 registerSW({
   immediate: true,

@@ -2,7 +2,7 @@ import Icon from './Icon.jsx';
 import { CHALLENGE_MODES, RESULT_OUTCOMES } from '../utils/progression.js';
 import { EXPIRED_DUEL_REASON } from '../utils/duelExpiration.js';
 
-export default function HistoryList({ history = [], limit = null, emptyLabel = 'Aucun combat enregistré.' }) {
+export default function HistoryList({ history = [], limit = null, emptyLabel = 'No saved fights.' }) {
   const visibleHistory = typeof limit === 'number' ? history.slice(0, limit) : history;
 
   if (!visibleHistory.length) {
@@ -26,14 +26,14 @@ export default function HistoryList({ history = [], limit = null, emptyLabel = '
               </span>
               {hasOpponentScore(entry) && (
                 <small>
-                  Adversaire : {entry.opponentPushups} pompes
-                  {typeof entry.opponentTimeMs === 'number' ? ` en ${formatSeconds(entry.opponentTimeMs)}s` : ''}
+                  Opponent: {entry.opponentPushups} push-ups
+                  {typeof entry.opponentTimeMs === 'number' ? ` in ${formatSeconds(entry.opponentTimeMs)}s` : ''}
                 </small>
               )}
             </div>
             <div className="history-score">
               <strong>{entry.pushups}</strong>
-              <span>toi</span>
+              <span>you</span>
             </div>
           </article>
         );
@@ -47,7 +47,7 @@ function getHistoryState(entry) {
     return {
       className: 'expired',
       icon: 'timer',
-      label: entry.outcome === RESULT_OUTCOMES.victory ? 'Gagné par expiration' : 'Expiré'
+      label: entry.outcome === RESULT_OUTCOMES.victory ? 'Won by expiration' : 'Expired'
     };
   }
 
@@ -55,7 +55,7 @@ function getHistoryState(entry) {
     return {
       className: 'defeat',
       icon: 'close',
-      label: 'Perdu'
+      label: 'Lost'
     };
   }
 
@@ -63,7 +63,7 @@ function getHistoryState(entry) {
     return {
       className: 'pending',
       icon: 'timer',
-      label: 'En attente'
+      label: 'Waiting'
     };
   }
 
@@ -71,14 +71,14 @@ function getHistoryState(entry) {
     return {
       className: 'draw',
       icon: 'radio_button_checked',
-      label: 'Égalité'
+      label: 'Draw'
     };
   }
 
   return {
     className: '',
     icon: 'check_circle',
-    label: 'Gagné'
+    label: 'Won'
   };
 }
 
@@ -96,17 +96,17 @@ function hasOpponentScore(entry) {
 
 function modeLabel(entry) {
   if (entry.mode === CHALLENGE_MODES.fixedGoal) {
-    return `${entry.goal} pompes chrono`;
+    return `${entry.goal} push-ups timed`;
   }
 
-  return 'Max en 1 min';
+  return '1 min max';
 }
 
 function formatRelativeDate(value) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return 'Date inconnue';
+    return 'Unknown date';
   }
 
   const diffMs = date.getTime() - Date.now();
@@ -116,7 +116,7 @@ function formatRelativeDate(value) {
     ['hour', 3_600_000],
     ['minute', 60_000]
   ];
-  const formatter = new Intl.RelativeTimeFormat('fr-FR', { numeric: 'auto' });
+  const formatter = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' });
 
   for (const [unit, unitMs] of units) {
     if (absMs >= unitMs) {
@@ -124,7 +124,7 @@ function formatRelativeDate(value) {
     }
   }
 
-  return 'à l’instant';
+  return 'just now';
 }
 
 function formatSeconds(milliseconds) {

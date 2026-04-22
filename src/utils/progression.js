@@ -189,10 +189,10 @@ export function makeChallenge({ mode, goal }) {
 
 export function challengeTitle(challenge) {
   if (challenge.mode === CHALLENGE_MODES.fixedGoal) {
-    return `${challenge.goal} pompes le plus vite possible`;
+    return `${challenge.goal} push-ups as fast as possible`;
   }
 
-  return 'Maximum de pompes en 1 min';
+  return 'Max push-ups in 1 min';
 }
 
 export function normalizeProgression(progression) {
@@ -203,7 +203,7 @@ export function normalizeProgression(progression) {
   return {
     onboarded: Boolean(progression?.onboarded),
     profile: {
-      nickname: sanitizeNickname(profile.nickname || 'Athlète'),
+      nickname: sanitizeNickname(profile.nickname || 'Athlete'),
       maxPushups: clampInteger(profile.maxPushups, 1, 999, 15),
       level: clampInteger(profile.level, 1, 999, 1),
       xp: clampInteger(profile.xp, 0, 999999, 0),
@@ -313,7 +313,7 @@ function normalizeCameraPermission(permission) {
 
 function sanitizeNickname(value) {
   const nickname = String(value || '').trim().slice(0, 18);
-  return nickname || 'Athlète';
+  return nickname || 'Athlete';
 }
 
 function clampInteger(value, min, max, fallback) {

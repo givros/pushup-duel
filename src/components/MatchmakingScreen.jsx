@@ -4,16 +4,16 @@ import Icon from './Icon.jsx';
 import { challengeTitle } from '../utils/progression.js';
 
 const FALLBACK_OPPONENTS = [
-  { id: 'nox', pseudo: 'Nox_Pulse', stat: 'Record 1 min : 38', rank: 'Rang argent' },
-  { id: 'maya', pseudo: 'MayaCore', stat: 'Série : 6 défis', rank: 'Rang or' },
-  { id: 'iron', pseudo: 'Iron_Jules', stat: 'Max déclaré : 54', rank: 'Rang platine' },
-  { id: 'kiro', pseudo: 'KiroFlex', stat: 'Précision : 91%', rank: 'Rang argent' },
-  { id: 'lena', pseudo: 'LenaVolt', stat: 'Record 1 min : 44', rank: 'Rang or' },
-  { id: 'axel', pseudo: 'Axel_Drive', stat: 'Duel envoyés : 22', rank: 'Rang bronze' },
-  { id: 'sora', pseudo: 'SoraPush', stat: 'Max déclaré : 61', rank: 'Rang platine' },
-  { id: 'milo', pseudo: 'MiloRush', stat: 'Série : 4 défis', rank: 'Rang argent' },
-  { id: 'jade', pseudo: 'JadeRep', stat: 'Record 1 min : 36', rank: 'Rang argent' },
-  { id: 'marcus', pseudo: 'Marcus Vane', stat: 'Max déclaré : 58', rank: 'Rang élite' }
+  { id: 'nox', pseudo: 'Nox_Pulse', stat: '1 min best: 38', rank: 'Silver rank' },
+  { id: 'maya', pseudo: 'MayaCore', stat: 'Streak: 6 duels', rank: 'Gold rank' },
+  { id: 'iron', pseudo: 'Iron_Jules', stat: 'Declared max: 54', rank: 'Platinum rank' },
+  { id: 'kiro', pseudo: 'KiroFlex', stat: 'Accuracy: 91%', rank: 'Silver rank' },
+  { id: 'lena', pseudo: 'LenaVolt', stat: '1 min best: 44', rank: 'Gold rank' },
+  { id: 'axel', pseudo: 'Axel_Drive', stat: 'Duels sent: 22', rank: 'Bronze rank' },
+  { id: 'sora', pseudo: 'SoraPush', stat: 'Declared max: 61', rank: 'Platinum rank' },
+  { id: 'milo', pseudo: 'MiloRush', stat: 'Streak: 4 duels', rank: 'Silver rank' },
+  { id: 'jade', pseudo: 'JadeRep', stat: '1 min best: 36', rank: 'Silver rank' },
+  { id: 'marcus', pseudo: 'Marcus Vane', stat: 'Declared max: 58', rank: 'Elite rank' }
 ];
 
 const SEARCH_DELAYS = [55, 55, 65, 70, 80, 92, 110, 135, 165, 205, 260, 330, 420, 540, 680];
@@ -74,9 +74,9 @@ export default function MatchmakingScreen({ challenge, progression, opponents = 
 
       <section className="opponent-search">
         <div className="versus-heading search-heading">
-          <p>{phase === 'found' ? 'Adversaire trouvé' : 'Recherche d’un adversaire...'}</p>
+          <p>{phase === 'found' ? 'Opponent found' : 'Searching for an opponent...'}</p>
           <h1>
-            Duel <span>asynchrone</span>
+            Async <span>duel</span>
           </h1>
           <div className="mode-chip">
             <Icon name="bolt" className="filled" />
@@ -98,7 +98,7 @@ export default function MatchmakingScreen({ challenge, progression, opponents = 
         <section className={`opponent-slot ${phase}`}>
           <OpponentAvatar opponent={currentOpponent} />
           <div className="opponent-copy">
-            <span>{phase === 'found' ? 'Profil sélectionné' : 'Analyse du profil'}</span>
+            <span>{phase === 'found' ? 'Selected profile' : 'Analyzing profile'}</span>
             <h2>{currentOpponent.pseudo}</h2>
             <p>{currentOpponent.stat}</p>
             <small>{currentOpponent.rank}</small>
@@ -107,7 +107,7 @@ export default function MatchmakingScreen({ challenge, progression, opponents = 
 
         <div className="search-progress">
           <div className="sync-row">
-            <span>{phase === 'found' ? 'Connexion prête' : 'Joueurs en recherche'}</span>
+            <span>{phase === 'found' ? 'Connection ready' : 'Players searching'}</span>
             <strong>{scanProgress}%</strong>
           </div>
           <div className="sync-track">
@@ -117,7 +117,7 @@ export default function MatchmakingScreen({ challenge, progression, opponents = 
 
         {phase === 'searching' && (
           <button className="ghost-cancel" type="button" onClick={onCancel}>
-            Annuler
+            Cancel
           </button>
         )}
       </section>
