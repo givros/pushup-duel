@@ -69,6 +69,35 @@ export async function loadRemoteProgression() {
   });
 }
 
+export async function recoverRemoteProgressionByNickname(nickname) {
+  const normalizedNickname = String(nickname || '').trim();
+
+  if (normalizedNickname.length < 2) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  await ensureAnonymousSession(supabase);
+
+  const { data, error } = await supabase.rpc('claim_player_account_by_nickname', {
+    input_nickname: normalizedNickname
+  });
+
+  if (isMissingClaimFunction(error)) {
+    throw makeRepositoryError('Profile recovery is not configured yet. Run the latest Supabase schema.', error);
+  }
+
+  if (error) {
+    throw makeRepositoryError('Unable to check this nickname.', error);
+  }
+
+  if (!data?.found) {
+    return null;
+  }
+
+  return loadRemoteProgression();
+}
+
 export async function saveRemoteProgression(progression) {
   const supabase = getSupabaseClient();
   const session = await ensureAnonymousSession(supabase);
@@ -365,6 +394,18 @@ function isHistoryMetadataColumnMissing(error) {
         error.message?.includes('opponent_pushups') ||
         error.message?.includes('opponent_time_ms') ||
         error.message?.includes('opponent_reason') ||
+        error.message?.includes('schema cache')
+      )
+  );
+}
+
+function isMissingClaimFunction(error) {
+  return Boolean(
+    error &&
+      (
+        error.code === '42883' ||
+        error.code === 'PGRST202' ||
+        error.message?.includes('claim_player_account_by_nickname') ||
         error.message?.includes('schema cache')
       )
   );

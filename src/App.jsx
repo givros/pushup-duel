@@ -27,6 +27,7 @@ import { isSupabaseConfigured } from './services/supabaseClient.js';
 import {
   deleteRemoteProgression,
   loadRemoteProgression,
+  recoverRemoteProgressionByNickname,
   saveRemoteProgression
 } from './services/progressionRepository.js';
 import {
@@ -311,11 +312,38 @@ export default function App() {
     persistProgression(nextProgression).catch(() => undefined);
   }, [persistProgression]);
 
-  async function completeSetup(profile) {
-    const nextProgression = createProgression(profile);
+  async function lookupNickname(nickname) {
+    setSyncError('');
 
     try {
-      await persistProgression(nextProgression);
+      return await recoverRemoteProgressionByNickname(nickname);
+    } catch (error) {
+      setSyncError(getSyncErrorMessage(error));
+      throw error;
+    }
+  }
+
+  async function completeSetup(setupResult) {
+    if (setupResult?.type === 'existing' && setupResult.progression) {
+      const recoveredProgression = setupResult.progression;
+      progressionRef.current = recoveredProgression;
+      setProgression(recoveredProgression);
+      setChallenge(makeChallenge({
+        mode: CHALLENGE_MODES.maxReps,
+        goal: recoveredProgression.profile.maxPushups || DEFAULT_PUSHUP_GOAL
+      }));
+      setScreen(getInitialScreen(recoveredProgression));
+      return;
+    }
+
+    const nextProgression = createProgression(setupResult.profile);
+
+    try {
+      const savedProgression = await persistProgression(nextProgression);
+      setChallenge(makeChallenge({
+        mode: CHALLENGE_MODES.maxReps,
+        goal: savedProgression.profile.maxPushups || DEFAULT_PUSHUP_GOAL
+      }));
       setScreen(screens.starter);
     } catch {
       setScreen(screens.setup);
@@ -616,7 +644,12 @@ export default function App() {
 
       {screen === screens.welcome && <WelcomeScreen onStart={() => setScreen(screens.setup)} />}
 
-      {screen === screens.setup && <ProfileSetupScreen onComplete={completeSetup} />}
+      {screen === screens.setup && (
+        <ProfileSetupScreen
+          onLookupNickname={lookupNickname}
+          onComplete={completeSetup}
+        />
+      )}
 
       {screen === screens.starter && progression?.onboarded && (
         <StarterChallengePrompt

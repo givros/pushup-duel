@@ -11,6 +11,9 @@ create table if not exists public.player_accounts (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists player_accounts_nickname_lookup_idx
+on public.player_accounts (lower(btrim(nickname)));
+
 create table if not exists public.player_settings (
   user_id uuid primary key references public.player_accounts(user_id) on delete cascade,
   camera_permission text not null default 'unknown' check (camera_permission in ('unknown', 'granted', 'denied')),
@@ -326,3 +329,91 @@ create trigger set_duel_challenges_updated_at
 before update on public.duel_challenges
 for each row
 execute function public.set_updated_at();
+
+create or replace function public.claim_player_account_by_nickname(input_nickname text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid := auth.uid();
+  requested_nickname text := lower(btrim(input_nickname));
+  target_user_id uuid;
+begin
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  if length(requested_nickname) < 2 then
+    return jsonb_build_object('found', false);
+  end if;
+
+  select user_id
+  into target_user_id
+  from public.player_accounts
+  where lower(btrim(nickname)) = requested_nickname
+  order by updated_at desc, created_at desc
+  limit 1;
+
+  if target_user_id is null then
+    return jsonb_build_object('found', false);
+  end if;
+
+  if target_user_id = current_user_id then
+    return jsonb_build_object('found', true, 'claimed', false);
+  end if;
+
+  delete from public.player_accounts
+  where user_id = current_user_id;
+
+  insert into public.player_accounts (
+    user_id,
+    nickname,
+    max_pushups,
+    level,
+    xp,
+    coins,
+    created_at,
+    updated_at
+  )
+  select
+    current_user_id,
+    nickname,
+    max_pushups,
+    level,
+    xp,
+    coins,
+    created_at,
+    now()
+  from public.player_accounts
+  where user_id = target_user_id;
+
+  update public.player_settings
+  set user_id = current_user_id
+  where user_id = target_user_id;
+
+  update public.player_stats
+  set user_id = current_user_id
+  where user_id = target_user_id;
+
+  update public.player_history
+  set user_id = current_user_id
+  where user_id = target_user_id;
+
+  update public.duel_challenges
+  set challenger_id = current_user_id
+  where challenger_id = target_user_id;
+
+  update public.duel_challenges
+  set receiver_id = current_user_id
+  where receiver_id = target_user_id;
+
+  delete from public.player_accounts
+  where user_id = target_user_id;
+
+  return jsonb_build_object('found', true, 'claimed', true);
+end;
+$$;
+
+grant execute on function public.claim_player_account_by_nickname(text) to authenticated;
