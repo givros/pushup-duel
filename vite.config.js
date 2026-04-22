@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
+      includeAssets: ['icons/icon-192.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Push-up Duel',
         short_name: 'Duel',

@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Push Challenge">
-  <rect width="512" height="512" rx="96" fill="#071014"/>
-  <path d="M82 376h348" stroke="#99f6e4" stroke-width="28" stroke-linecap="round"/>
-  <circle cx="348" cy="174" r="42" fill="#f97316"/>
-  <path d="M176 260 314 210 402 248" fill="none" stroke="#f8fafc" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M206 266 160 342M314 216l-18 110" fill="none" stroke="#14b8a6" stroke-width="34" stroke-linecap="round"/>
-  <path d="M116 342h88M276 326h92" fill="none" stroke="#f8fafc" stroke-width="30" stroke-linecap="round"/>
-</svg>
