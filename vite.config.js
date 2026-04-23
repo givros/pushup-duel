@@ -12,7 +12,7 @@ export default defineConfig({
       includeAssets: ['icons/icon-192.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Push-up Duel',
-        short_name: 'Duel',
+        short_name: 'Pushup Duel',
         description: 'Push-up duel with camera-based detection.',
         lang: 'en',
         start_url: '/pushup-duel/',
